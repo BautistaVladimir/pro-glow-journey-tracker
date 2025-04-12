@@ -4,7 +4,6 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useState } from "react";
 
 // Pages
 import Dashboard from "./pages/Dashboard";
@@ -15,51 +14,63 @@ import Sleep from "./pages/Sleep";
 import Goals from "./pages/Goals";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import AdminLogin from "./pages/AdminLogin";
+import AdminRegister from "./pages/AdminRegister";
+import Admin from "./pages/Admin";
 
 // Layout components
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
+import PrivateRoute from "./components/auth/PrivateRoute";
 
-// Dummy user data (would be replaced with actual authentication)
-const dummyUser = {
-  id: '1',
-  name: 'Alex Johnson',
-  email: 'alex@example.com',
-  avatar: null,
-  height: 175, // cm
-  weight: 70, // kg
-  gender: 'not specified',
-  age: 30,
-};
+// Auth context
+import { AuthProvider } from "./contexts/AuthContext";
 
 const queryClient = new QueryClient();
 
 const App = () => {
-  const [user, setUser] = useState(dummyUser);
-  
   return (
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <div className="min-h-screen flex flex-col">
-            <Navbar user={user} />
-            <main className="flex-grow px-4 py-8 md:px-8 max-w-7xl mx-auto w-full">
-              <Routes>
-                <Route path="/" element={<Dashboard user={user} />} />
-                <Route path="/bmi" element={<BMI user={user} setUser={setUser} />} />
-                <Route path="/activities" element={<Activities user={user} />} />
-                <Route path="/nutrition" element={<Nutrition user={user} />} />
-                <Route path="/sleep" element={<Sleep user={user} />} />
-                <Route path="/goals" element={<Goals user={user} />} />
-                <Route path="/profile" element={<Profile user={user} setUser={setUser} />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </main>
-            <Footer />
-          </div>
-          <Toaster />
-          <Sonner />
-        </TooltipProvider>
+        <AuthProvider>
+          <TooltipProvider>
+            <div className="min-h-screen flex flex-col">
+              <Navbar />
+              <main className="flex-grow px-4 py-8 md:px-8 max-w-7xl mx-auto w-full">
+                <Routes>
+                  {/* Public Routes */}
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/admin-login" element={<AdminLogin />} />
+                  <Route path="/admin-register" element={<AdminRegister />} />
+                  
+                  {/* Protected Routes (require login) */}
+                  <Route element={<PrivateRoute />}>
+                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/bmi" element={<BMI />} />
+                    <Route path="/activities" element={<Activities />} />
+                    <Route path="/nutrition" element={<Nutrition />} />
+                    <Route path="/sleep" element={<Sleep />} />
+                    <Route path="/goals" element={<Goals />} />
+                    <Route path="/profile" element={<Profile />} />
+                  </Route>
+                  
+                  {/* Admin Routes */}
+                  <Route element={<PrivateRoute requireAdmin={true} />}>
+                    <Route path="/admin" element={<Admin />} />
+                  </Route>
+                  
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </main>
+              <Footer />
+            </div>
+            <Toaster />
+            <Sonner />
+          </TooltipProvider>
+        </AuthProvider>
       </QueryClientProvider>
     </BrowserRouter>
   );
