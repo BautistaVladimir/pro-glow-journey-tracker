@@ -1,8 +1,8 @@
-
 import { useState } from 'react';
 import NutritionTracker, { NutritionEntry } from '@/components/tracking/NutritionTracker';
 import HydrationTracker, { HydrationEntry } from '@/components/tracking/HydrationTracker';
 import { v4 as uuidv4 } from '@/lib/utils'; // Simulating UUID
+import { AuthUser } from '@/contexts/AuthContext';
 
 // Mock nutrition entries
 const mockNutritionEntries: NutritionEntry[] = [
@@ -41,9 +41,7 @@ const mockNutritionEntries: NutritionEntry[] = [
 ];
 
 type NutritionProps = {
-  user: {
-    name: string;
-  };
+  user: AuthUser;
 };
 
 const Nutrition = ({ user }: NutritionProps) => {

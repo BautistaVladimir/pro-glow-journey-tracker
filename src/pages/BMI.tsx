@@ -3,12 +3,10 @@ import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import BMICalculator from '@/components/bmi/BMICalculator';
 import ProgressChart from '@/components/charts/ProgressChart';
+import { AuthUser } from '@/contexts/AuthContext';
 
 type BMIProps = {
-  user: {
-    height: number;
-    weight: number;
-  };
+  user: AuthUser;
   setUser: (user: any) => void;
 };
 

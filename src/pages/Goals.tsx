@@ -1,7 +1,7 @@
-
 import { useState } from 'react';
 import GoalSetting, { Goal } from '@/components/goals/GoalSetting';
 import { v4 as uuidv4 } from '@/lib/utils'; // Simulating UUID
+import { AuthUser } from '@/contexts/AuthContext';
 
 // Mock goals
 const mockGoals: Goal[] = [
@@ -30,9 +30,7 @@ const mockGoals: Goal[] = [
 ];
 
 type GoalsProps = {
-  user: {
-    name: string;
-  };
+  user: AuthUser;
 };
 
 const Goals = ({ user }: GoalsProps) => {

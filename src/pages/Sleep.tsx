@@ -1,9 +1,9 @@
-
 import { useState } from 'react';
 import SleepTracker, { SleepEntry } from '@/components/tracking/SleepTracker';
 import ProgressChart from '@/components/charts/ProgressChart';
 import { Card, CardContent } from '@/components/ui/card';
 import { v4 as uuidv4 } from '@/lib/utils'; // Simulating UUID
+import { AuthUser } from '@/contexts/AuthContext';
 
 // Mock sleep entries
 const mockSleepEntries: SleepEntry[] = [
@@ -17,9 +17,7 @@ const mockSleepEntries: SleepEntry[] = [
 ];
 
 type SleepProps = {
-  user: {
-    name: string;
-  };
+  user: AuthUser;
 };
 
 const Sleep = ({ user }: SleepProps) => {

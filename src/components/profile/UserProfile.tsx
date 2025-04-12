@@ -12,10 +12,10 @@ type UserProfileProps = {
   user: {
     name: string;
     email: string;
-    height: number;
-    weight: number;
-    gender: string;
-    age: number;
+    height?: number;
+    weight?: number;
+    gender?: string;
+    age?: number;
   };
   onUpdateProfile: (updatedUser: Partial<UserProfileProps['user']>) => void;
 };
@@ -23,10 +23,10 @@ type UserProfileProps = {
 const UserProfile = ({ user, onUpdateProfile }: UserProfileProps) => {
   const [name, setName] = useState(user.name);
   const [email, setEmail] = useState(user.email);
-  const [height, setHeight] = useState(user.height);
-  const [weight, setWeight] = useState(user.weight);
-  const [gender, setGender] = useState(user.gender);
-  const [age, setAge] = useState(user.age);
+  const [height, setHeight] = useState(user.height || 170);
+  const [weight, setWeight] = useState(user.weight || 70);
+  const [gender, setGender] = useState(user.gender || 'not specified');
+  const [age, setAge] = useState(user.age || 30);
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
