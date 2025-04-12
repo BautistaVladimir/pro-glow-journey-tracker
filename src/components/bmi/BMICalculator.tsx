@@ -9,8 +9,8 @@ import { Slider } from '@/components/ui/slider';
 
 type BMICalculatorProps = {
   user: {
-    height: number;
-    weight: number;
+    height?: number;
+    weight?: number;
   };
   onSave: (height: number, weight: number, bmi: number) => void;
 };
@@ -18,8 +18,9 @@ type BMICalculatorProps = {
 type BMICategory = 'Underweight' | 'Healthy Weight' | 'Overweight' | 'Obese';
 
 const BMICalculator = ({ user, onSave }: BMICalculatorProps) => {
-  const [height, setHeight] = useState(user.height);
-  const [weight, setWeight] = useState(user.weight);
+  // Set default values if height or weight are undefined
+  const [height, setHeight] = useState(user.height || 170);
+  const [weight, setWeight] = useState(user.weight || 70);
   const [bmi, setBMI] = useState(0);
   const [category, setCategory] = useState<BMICategory | ''>('');
   
