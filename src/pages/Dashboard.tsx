@@ -6,25 +6,22 @@ import StatCard from '@/components/dashboard/StatCard';
 import ProgressChart from '@/components/charts/ProgressChart';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
-type DashboardProps = {
-  user: {
-    name: string;
-  };
-};
+const Dashboard = () => {
+  const { user } = useAuth();
+  
+  // Mock data for initial dashboard
+  const mockWeightData = [
+    { date: '2025-04-05', value: 72.5 },
+    { date: '2025-04-06', value: 72.3 },
+    { date: '2025-04-07', value: 72.1 },
+    { date: '2025-04-08', value: 71.8 },
+    { date: '2025-04-09', value: 71.6 },
+    { date: '2025-04-10', value: 71.4 },
+    { date: '2025-04-11', value: 71.2 },
+  ];
 
-// Mock data for initial dashboard
-const mockWeightData = [
-  { date: '2025-04-05', value: 72.5 },
-  { date: '2025-04-06', value: 72.3 },
-  { date: '2025-04-07', value: 72.1 },
-  { date: '2025-04-08', value: 71.8 },
-  { date: '2025-04-09', value: 71.6 },
-  { date: '2025-04-10', value: 71.4 },
-  { date: '2025-04-11', value: 71.2 },
-];
-
-const Dashboard = ({ user }: DashboardProps) => {
   // Time of day greeting
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -37,7 +34,7 @@ const Dashboard = ({ user }: DashboardProps) => {
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center">
         <div>
-          <h1 className="text-3xl font-bold">{getGreeting()}, {user.name}!</h1>
+          <h1 className="text-3xl font-bold">{getGreeting()}, {user?.name || 'User'}!</h1>
           <p className="text-muted-foreground mt-1">Your wellness journey awaits.</p>
         </div>
         <div className="mt-4 sm:mt-0">

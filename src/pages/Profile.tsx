@@ -1,24 +1,12 @@
 
 import UserProfile from '@/components/profile/UserProfile';
+import { useAuth } from '@/contexts/AuthContext';
 
-type ProfileProps = {
-  user: {
-    name: string;
-    email: string;
-    height: number;
-    weight: number;
-    gender: string;
-    age: number;
-  };
-  setUser: (user: any) => void;
-};
+const Profile = () => {
+  const { user, updateUserProfile } = useAuth();
 
-const Profile = ({ user, setUser }: ProfileProps) => {
-  const handleUpdateProfile = (updatedData: Partial<ProfileProps['user']>) => {
-    setUser({
-      ...user,
-      ...updatedData,
-    });
+  const handleUpdateProfile = (updatedData: Partial<typeof user>) => {
+    updateUserProfile(updatedData);
   };
   
   return (
@@ -28,7 +16,7 @@ const Profile = ({ user, setUser }: ProfileProps) => {
         <p className="text-muted-foreground mt-1">Manage your personal information</p>
       </div>
       
-      <UserProfile user={user} onUpdateProfile={handleUpdateProfile} />
+      {user && <UserProfile user={user} onUpdateProfile={handleUpdateProfile} />}
     </div>
   );
 };
