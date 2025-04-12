@@ -11,16 +11,16 @@ type BMICalculatorProps = {
   user: {
     height?: number;
     weight?: number;
-  };
+  } | null | undefined;
   onSave: (height: number, weight: number, bmi: number) => void;
 };
 
 type BMICategory = 'Underweight' | 'Healthy Weight' | 'Overweight' | 'Obese';
 
 const BMICalculator = ({ user, onSave }: BMICalculatorProps) => {
-  // Set default values if height or weight are undefined
-  const [height, setHeight] = useState(user.height || 170);
-  const [weight, setWeight] = useState(user.weight || 70);
+  // Set default values if user is undefined or height/weight are undefined
+  const [height, setHeight] = useState(user?.height || 170);
+  const [weight, setWeight] = useState(user?.weight || 70);
   const [bmi, setBMI] = useState(0);
   const [category, setCategory] = useState<BMICategory | ''>('');
   

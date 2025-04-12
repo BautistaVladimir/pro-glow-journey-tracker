@@ -6,7 +6,7 @@ import ProgressChart from '@/components/charts/ProgressChart';
 import { AuthUser } from '@/contexts/AuthContext';
 
 type BMIProps = {
-  user: AuthUser;
+  user: AuthUser | null;
   setUser: (user: any) => void;
 };
 
@@ -23,6 +23,8 @@ const BMI = ({ user, setUser }: BMIProps) => {
   const [bmiHistory, setBMIHistory] = useState(mockBMIHistory);
   
   const handleSave = (height: number, weight: number, bmi: number) => {
+    if (!user) return;
+    
     // Update user data
     setUser({
       ...user,
