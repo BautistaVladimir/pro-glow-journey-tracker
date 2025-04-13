@@ -36,6 +36,9 @@
     --radius: 0.5rem;
     
     --proglo-purple: #7c3aed;
+    --proglo-light-purple: #c4b5fd;
+    --proglo-dark-purple: #5b21b6;
+    --proglo-green: #10b981;
   }
 
   .dark {
@@ -80,4 +83,37 @@
 
 .bg-purple-gradient {
   background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+.hover-scale {
+  @apply transition-transform duration-200 hover:scale-105;
+}
+
+.card-hover {
+  @apply transition-all duration-300 hover:shadow-md hover:border-primary/20;
+}
+
+/* Card hover effects */
+.card-hover-effect {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-hover-effect:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px -5px rgba(124, 58, 237, 0.1), 0 8px 10px -6px rgba(124, 58, 237, 0.1);
 }

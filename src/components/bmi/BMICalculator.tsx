@@ -66,16 +66,16 @@ const BMICalculator = ({ user, onSave }: BMICalculatorProps) => {
   };
   
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle>BMI Calculator</CardTitle>
+    <Card className="w-full max-w-md mx-auto border border-purple-100 shadow-md card-hover-effect">
+      <CardHeader className="bg-purple-50 border-b border-purple-100">
+        <CardTitle className="text-proglo-purple">BMI Calculator</CardTitle>
         <CardDescription>
           Body Mass Index (BMI) is a measure of body fat based on height and weight.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-6 pt-6">
         <div className="space-y-2">
-          <Label htmlFor="height">Height (cm)</Label>
+          <Label htmlFor="height" className="text-sm font-medium">Height (cm)</Label>
           <div className="flex items-center space-x-4">
             <Slider
               id="height-slider"
@@ -99,7 +99,7 @@ const BMICalculator = ({ user, onSave }: BMICalculatorProps) => {
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="weight">Weight (kg)</Label>
+          <Label htmlFor="weight" className="text-sm font-medium">Weight (kg)</Label>
           <div className="flex items-center space-x-4">
             <Slider
               id="weight-slider"
@@ -123,16 +123,19 @@ const BMICalculator = ({ user, onSave }: BMICalculatorProps) => {
           </div>
         </div>
         
-        <div className="bg-muted rounded-md p-4 text-center">
+        <div className="bg-purple-50 rounded-md p-4 text-center border border-purple-100">
           <p className="text-sm">Your BMI</p>
-          <h3 className="text-3xl font-bold">{bmi}</h3>
+          <h3 className="text-3xl font-bold text-proglo-purple">{bmi}</h3>
           <p className={`text-sm font-medium ${getCategoryColor()}`}>
             {category}
           </p>
         </div>
       </CardContent>
-      <CardFooter>
-        <Button className="w-full" onClick={handleSave}>
+      <CardFooter className="border-t border-purple-100 bg-purple-50/50">
+        <Button 
+          className="w-full bg-proglo-purple hover:bg-proglo-dark-purple" 
+          onClick={handleSave}
+        >
           Save Results
         </Button>
       </CardFooter>

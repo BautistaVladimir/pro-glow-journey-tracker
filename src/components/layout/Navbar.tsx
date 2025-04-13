@@ -63,9 +63,11 @@ const Navbar = () => {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link to="/" className="flex items-center">
-              <div className="h-10 w-10 rounded-full bg-proglo-purple flex items-center justify-center mr-2">
-                <span className="text-white font-bold">PG</span>
-              </div>
+              <img 
+                src="/lovable-uploads/d07601be-d85e-4bba-b589-4ea61e7bcd9f.png" 
+                alt="ProGlo Logo" 
+                className="h-10 w-auto mr-2" 
+              />
               <span className="text-lg font-bold bg-clip-text text-transparent bg-purple-gradient">Pro-Glo</span>
             </Link>
           </div>
@@ -78,8 +80,8 @@ const Navbar = () => {
                   to={item.path}
                   className={`px-3 py-2 rounded-md text-sm font-medium flex items-center ${
                     location.pathname === item.path
-                      ? 'text-proglo-purple bg-muted'
-                      : 'text-foreground hover:bg-muted hover:text-proglo-purple'
+                      ? 'text-proglo-purple bg-purple-50'
+                      : 'text-foreground hover:bg-purple-50 hover:text-proglo-purple'
                   }`}
                 >
                   <span className="mr-1">{item.icon}</span>
@@ -186,7 +188,7 @@ const Navbar = () => {
                     className={`block px-3 py-2 rounded-md text-base font-medium flex items-center ${
                       location.pathname === item.path
                         ? 'text-white bg-proglo-purple'
-                        : 'text-foreground hover:bg-muted hover:text-proglo-purple'
+                        : 'text-foreground hover:bg-purple-50 hover:text-proglo-purple'
                     }`}
                     onClick={() => setIsMenuOpen(false)}
                   >
@@ -196,14 +198,14 @@ const Navbar = () => {
                 ))}
                 <Link
                   to="/profile"
-                  className="block px-3 py-2 rounded-md text-base font-medium flex items-center text-foreground hover:bg-muted hover:text-proglo-purple"
+                  className="block px-3 py-2 rounded-md text-base font-medium flex items-center text-foreground hover:bg-purple-50 hover:text-proglo-purple"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <User size={18} className="mr-2" />
                   Profile
                 </Link>
                 <button
-                  className="w-full text-left block px-3 py-2 rounded-md text-base font-medium flex items-center text-foreground hover:bg-muted hover:text-destructive"
+                  className="w-full text-left block px-3 py-2 rounded-md text-base font-medium flex items-center text-foreground hover:bg-purple-50 hover:text-destructive"
                   onClick={handleLogout}
                 >
                   <LogOut size={18} className="mr-2" />
