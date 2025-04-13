@@ -117,3 +117,78 @@
   transform: translateY(-5px);
   box-shadow: 0 10px 25px -5px rgba(124, 58, 237, 0.1), 0 8px 10px -6px rgba(124, 58, 237, 0.1);
 }
+
+/* Enhanced card designs */
+.proglo-card {
+  @apply rounded-xl border border-purple-100 shadow-sm overflow-hidden hover:shadow-md transition-all duration-300;
+}
+
+.proglo-card-header {
+  @apply bg-gradient-to-r from-purple-50 to-violet-50 p-6 border-b border-purple-100;
+}
+
+.proglo-gradient-text {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-proglo-purple to-violet-500 font-bold;
+}
+
+.proglo-button {
+  @apply bg-proglo-purple hover:bg-proglo-dark-purple text-white font-medium rounded-lg px-4 py-2 transition-all duration-200 shadow-sm hover:shadow;
+}
+
+.proglo-section-header {
+  @apply bg-gradient-to-r from-purple-50 to-violet-50 rounded-xl p-6 border border-purple-100 mb-6 shadow-sm;
+}
+
+/* Form styles */
+.proglo-form-container {
+  @apply bg-white rounded-xl border border-purple-100 shadow-md overflow-hidden max-w-md w-full;
+}
+
+.proglo-form-header {
+  @apply bg-gradient-to-r from-purple-50 to-violet-50 p-6 text-center;
+}
+
+.proglo-form-content {
+  @apply p-6 space-y-6;
+}
+
+.proglo-form-footer {
+  @apply p-6 bg-gray-50 border-t border-purple-100 flex justify-center;
+}
+
+/* Dashboard card styles */
+.dashboard-stat-card {
+  @apply bg-white rounded-xl border border-purple-100 p-4 shadow-sm hover:shadow-md transition-all duration-300;
+}
+
+.dashboard-stat-value {
+  @apply text-2xl font-bold text-proglo-purple;
+}
+
+/* Animations for sections */
+.stagger-animate-1 {
+  animation: fadeIn 0.5s ease-out 0.1s forwards;
+  opacity: 0;
+}
+
+.stagger-animate-2 {
+  animation: fadeIn 0.5s ease-out 0.2s forwards;
+  opacity: 0;
+}
+
+.stagger-animate-3 {
+  animation: fadeIn 0.5s ease-out 0.3s forwards;
+  opacity: 0;
+}
+
+/* Page transition animations */
+.page-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms, transform 300ms;
+}

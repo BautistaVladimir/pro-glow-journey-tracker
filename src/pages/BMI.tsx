@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import BMICalculator from '@/components/bmi/BMICalculator';
 import ProgressChart from '@/components/charts/ProgressChart';
 import { AuthUser } from '@/contexts/AuthContext';
+import { Activity, TrendingDown, Award, Info } from 'lucide-react';
 
 type BMIProps = {
   user: AuthUser | null;
@@ -51,9 +52,12 @@ const BMI = ({ user, setUser }: BMIProps) => {
   
   return (
     <div className="space-y-8">
-      <div className="bg-purple-50 rounded-lg p-6 border border-purple-100">
-        <h1 className="text-3xl font-bold text-proglo-purple">BMI Tracker</h1>
-        <p className="text-muted-foreground mt-1">Monitor your Body Mass Index over time</p>
+      <div className="proglo-section-header">
+        <h1 className="text-3xl font-bold proglo-gradient-text flex items-center">
+          <Activity className="mr-2 text-proglo-purple" size={28} />
+          BMI Tracker
+        </h1>
+        <p className="text-gray-600 mt-1">Monitor your Body Mass Index over time</p>
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -62,38 +66,49 @@ const BMI = ({ user, setUser }: BMIProps) => {
         </div>
         
         <div className="animate-fade-in" style={{ animationDelay: "0.2s" }}>
-          <Card className="overflow-hidden border border-purple-100 shadow-md">
+          <Card className="overflow-hidden border-purple-100 shadow-md proglo-card">
+            <div className="proglo-card-header">
+              <h3 className="text-xl font-semibold proglo-gradient-text flex items-center">
+                <TrendingDown className="mr-2" size={18} />
+                Progress History
+              </h3>
+            </div>
             <CardContent className="pt-6">
-              <h3 className="text-xl font-semibold mb-4 text-proglo-purple">Progress History</h3>
               <ProgressChart 
                 data={bmiHistory}
                 label="BMI History"
                 color="#9b87f5"
+                height={220}
               />
               
-              <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-2">
-                <div className="bg-purple-50 p-3 rounded-md border border-purple-100">
-                  <p className="text-xs text-muted-foreground">Underweight</p>
-                  <p className="text-sm font-medium">Below 18.5</p>
+              <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="bg-gradient-to-b from-blue-50 to-white p-3 rounded-md border border-blue-100 text-center">
+                  <p className="text-xs text-gray-600">Underweight</p>
+                  <p className="text-sm font-medium text-blue-600">Below 18.5</p>
                 </div>
-                <div className="bg-purple-50 p-3 rounded-md border border-purple-100">
-                  <p className="text-xs text-muted-foreground">Healthy Weight</p>
-                  <p className="text-sm font-medium">18.5 - 24.9</p>
+                <div className="bg-gradient-to-b from-green-50 to-white p-3 rounded-md border border-green-100 text-center">
+                  <Award className="h-3 w-3 mx-auto mb-1 text-green-600" />
+                  <p className="text-xs text-gray-600">Healthy Weight</p>
+                  <p className="text-sm font-medium text-green-600">18.5 - 24.9</p>
                 </div>
-                <div className="bg-purple-50 p-3 rounded-md border border-purple-100">
-                  <p className="text-xs text-muted-foreground">Overweight</p>
-                  <p className="text-sm font-medium">25 - 29.9</p>
+                <div className="bg-gradient-to-b from-orange-50 to-white p-3 rounded-md border border-orange-100 text-center">
+                  <p className="text-xs text-gray-600">Overweight</p>
+                  <p className="text-sm font-medium text-orange-600">25 - 29.9</p>
                 </div>
-                <div className="bg-purple-50 p-3 rounded-md border border-purple-100 col-span-2 sm:col-span-1">
-                  <p className="text-xs text-muted-foreground">Obese</p>
-                  <p className="text-sm font-medium">30 or higher</p>
+                <div className="bg-gradient-to-b from-red-50 to-white p-3 rounded-md border border-red-100 text-center">
+                  <p className="text-xs text-gray-600">Obese</p>
+                  <p className="text-sm font-medium text-red-600">30 or higher</p>
                 </div>
               </div>
               
-              <p className="text-xs text-muted-foreground mt-4">
-                Note: BMI is a screening tool, not a diagnostic tool. Consult with a healthcare 
-                provider to evaluate your overall health and risks.
-              </p>
+              <div className="mt-6 flex items-start p-3 bg-blue-50 rounded-md border border-blue-100">
+                <Info className="h-5 w-5 text-blue-500 mr-2 shrink-0 mt-0.5" />
+                <p className="text-xs text-gray-600">
+                  BMI is a screening tool, not a diagnostic tool. Consult with a healthcare 
+                  provider to evaluate your overall health and risks. BMI doesn't differentiate
+                  between muscle and fat, and may not be accurate for athletes, elderly, or pregnant women.
+                </p>
+              </div>
             </CardContent>
           </Card>
         </div>

@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '@/contexts/AuthContext';
+import { LogIn, User, Mail, Lock } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -49,23 +50,33 @@ const Login = () => {
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-12rem)] items-center justify-center">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl text-center">Log In to Pro-Glo</CardTitle>
-          <CardDescription className="text-center">Enter your credentials to access your account</CardDescription>
+    <div className="flex min-h-[calc(100vh-12rem)] items-center justify-center px-4 py-12">
+      <Card className="w-full max-w-md border-purple-100 shadow-lg animate-fade-in proglo-card">
+        <CardHeader className="space-y-2 text-center proglo-card-header">
+          <div className="mx-auto w-20 h-20 rounded-full bg-purple-50 flex items-center justify-center mb-2">
+            <LogIn className="h-10 w-10 text-proglo-purple" />
+          </div>
+          <CardTitle className="text-2xl proglo-gradient-text">Welcome Back</CardTitle>
+          <CardDescription className="text-gray-600">Enter your credentials to access your account</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
               <FormField
                 control={form.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel className="flex items-center text-gray-700">
+                      <Mail className="h-4 w-4 mr-2 text-proglo-purple" />
+                      Email
+                    </FormLabel>
                     <FormControl>
-                      <Input placeholder="your.email@example.com" {...field} />
+                      <Input 
+                        placeholder="your.email@example.com" 
+                        className="border-purple-100 focus:border-proglo-purple focus:ring-proglo-purple/20"
+                        {...field} 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -76,26 +87,41 @@ const Login = () => {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel className="flex items-center text-gray-700">
+                      <Lock className="h-4 w-4 mr-2 text-proglo-purple" />
+                      Password
+                    </FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} />
+                      <Input 
+                        type="password" 
+                        placeholder="••••••••" 
+                        className="border-purple-100 focus:border-proglo-purple focus:ring-proglo-purple/20"
+                        {...field} 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button 
+                type="submit" 
+                className="w-full bg-proglo-purple hover:bg-proglo-dark-purple" 
+                disabled={isLoading}
+              >
                 {isLoading ? 'Logging in...' : 'Log in'}
               </Button>
             </form>
           </Form>
         </CardContent>
-        <CardFooter className="flex flex-col space-y-2">
+        <CardFooter className="flex flex-col space-y-2 bg-gray-50 border-t border-purple-100 rounded-b-xl">
           <div className="text-center text-sm">
             Don't have an account? <Link to="/register" className="text-proglo-purple font-medium hover:underline">Register</Link>
           </div>
           <div className="text-center text-sm">
-            <Link to="/admin-login" className="text-gray-500 hover:text-proglo-purple hover:underline">Admin Login</Link>
+            <Link to="/admin-login" className="text-gray-500 hover:text-proglo-purple hover:underline flex items-center justify-center">
+              <User className="h-3 w-3 mr-1" />
+              Admin Login
+            </Link>
           </div>
         </CardFooter>
       </Card>

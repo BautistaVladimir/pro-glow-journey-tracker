@@ -1,77 +1,91 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
-import { Shield, Users, Activity, LineChart } from "lucide-react";
+import { Shield, Users, Activity, LineChart, Award, ChevronUp, ChevronDown, UserCog, Settings } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 const Admin = () => {
   const { user } = useAuth();
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Admin Dashboard</h2>
-          <p className="text-muted-foreground">
-            Welcome back, {user?.name}
-          </p>
+      <div className="bg-gradient-to-r from-purple-50 to-violet-50 rounded-2xl p-8 border border-purple-100 shadow-sm animate-fade-in">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight proglo-gradient-text">Admin Dashboard</h2>
+            <p className="text-gray-600 mt-1">
+              Welcome back, {user?.name}
+            </p>
+          </div>
+          <Badge className="bg-proglo-purple hover:bg-proglo-dark-purple">
+            <Shield className="h-3.5 w-3.5 mr-1" />
+            Administrator
+          </Badge>
         </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className="proglo-card stagger-animate-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <Users className="h-4 w-4 text-proglo-purple" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">2</div>
-            <p className="text-xs text-muted-foreground">
-              +0% from last month
+            <div className="text-2xl font-bold text-proglo-purple">2</div>
+            <p className="text-xs text-muted-foreground flex items-center mt-1">
+              <ChevronUp className="h-3 w-3 mr-1 text-green-500" />
+              <span className="text-green-500 font-medium">+0%</span> from last month
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="proglo-card stagger-animate-1" style={{ animationDelay: "0.1s" }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Users</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <Users className="h-4 w-4 text-proglo-purple" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">2</div>
-            <p className="text-xs text-muted-foreground">
-              +0% from last month
+            <div className="text-2xl font-bold text-proglo-purple">2</div>
+            <p className="text-xs text-muted-foreground flex items-center mt-1">
+              <ChevronUp className="h-3 w-3 mr-1 text-green-500" />
+              <span className="text-green-500 font-medium">+0%</span> from last month
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="proglo-card stagger-animate-1" style={{ animationDelay: "0.2s" }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Activities Logged</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
+            <Activity className="h-4 w-4 text-proglo-purple" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground">
-              +0% from last month
+            <div className="text-2xl font-bold text-proglo-purple">12</div>
+            <p className="text-xs text-muted-foreground flex items-center mt-1">
+              <ChevronUp className="h-3 w-3 mr-1 text-green-500" />
+              <span className="text-green-500 font-medium">+20%</span> from last month
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="proglo-card stagger-animate-1" style={{ animationDelay: "0.3s" }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Goals Set</CardTitle>
-            <LineChart className="h-4 w-4 text-muted-foreground" />
+            <Award className="h-4 w-4 text-proglo-purple" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground">
-              +0% from last month
+            <div className="text-2xl font-bold text-proglo-purple">6</div>
+            <p className="text-xs text-muted-foreground flex items-center mt-1">
+              <ChevronUp className="h-3 w-3 mr-1 text-green-500" />
+              <span className="text-green-500 font-medium">+50%</span> from last month
             </p>
           </CardContent>
         </Card>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Admin Access</CardTitle>
+        <Card className="proglo-card stagger-animate-2">
+          <CardHeader className="proglo-card-header">
+            <CardTitle className="flex items-center">
+              <Settings className="h-5 w-5 mr-2 text-proglo-purple" />
+              Admin Access
+            </CardTitle>
             <CardDescription>
               This section is only accessible to administrators
             </CardDescription>
@@ -79,41 +93,46 @@ const Admin = () => {
           <CardContent>
             <div className="flex items-center justify-center p-6">
               <div className="flex flex-col items-center text-center">
-                <Shield className="h-16 w-16 text-proglo-purple" />
-                <h3 className="mt-4 text-xl font-medium">Administrator Access Granted</h3>
-                <p className="mt-2 text-muted-foreground">
+                <div className="h-20 w-20 rounded-full bg-purple-50 flex items-center justify-center border-4 border-purple-100">
+                  <Shield className="h-12 w-12 text-proglo-purple" />
+                </div>
+                <h3 className="mt-4 text-xl font-medium text-proglo-purple">Administrator Access Granted</h3>
+                <p className="mt-2 text-gray-600">
                   You have full administrator privileges to manage the Pro-Glo application
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Admin ID</CardTitle>
+        <Card className="proglo-card stagger-animate-2" style={{ animationDelay: "0.1s" }}>
+          <CardHeader className="proglo-card-header">
+            <CardTitle className="flex items-center">
+              <UserCog className="h-5 w-5 mr-2 text-proglo-purple" />
+              Admin ID
+            </CardTitle>
             <CardDescription>
               Your administrator identification
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
+            <div className="space-y-4 mt-4">
+              <div className="flex items-center justify-between bg-purple-50 p-3 rounded-lg border border-purple-100">
                 <div className="font-medium">ID:</div>
-                <div>{user?.id}</div>
+                <div>{user?.id || "N/A"}</div>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between bg-purple-50 p-3 rounded-lg border border-purple-100">
                 <div className="font-medium">Name:</div>
-                <div>{user?.name}</div>
+                <div>{user?.name || "N/A"}</div>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between bg-purple-50 p-3 rounded-lg border border-purple-100">
                 <div className="font-medium">Email:</div>
-                <div>{user?.email}</div>
+                <div>{user?.email || "N/A"}</div>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between bg-purple-50 p-3 rounded-lg border border-purple-100">
                 <div className="font-medium">Role:</div>
-                <div className="bg-proglo-purple text-white px-2 py-1 rounded text-xs">
+                <Badge className="bg-proglo-purple text-white">
                   Administrator
-                </div>
+                </Badge>
               </div>
             </div>
           </CardContent>
