@@ -1,197 +1,179 @@
-
-import { useState } from 'react';
-import { Target, Award, Check, TrendingUp, Calendar } from 'lucide-react';
-import GoalSetting, { Goal } from '@/components/goals/GoalSetting';
+import React, { useState } from 'react';
+import { Dumbbell, Target, Award, Plus, Edit2, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { v4 as uuidv4 } from '@/lib/utils'; // Simulating UUID
-import { AuthUser } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { v4 as uuidv4 } from '@/lib/utils';
+import GoalSetting from '@/components/goals/GoalSetting';
 
-// Mock goals
-const mockGoals: Goal[] = [
+export type Goal = {
+  id: string;
+  title: string;
+  description: string;
+  category: 'fitness' | 'nutrition' | 'sleep' | 'weight' | 'other';
+  targetValue: number;
+  currentValue: number;
+  startValue: number; // Added missing property
+  unit: string;
+  deadline: string;
+  createdAt: string;
+};
+
+// Sample goals data
+const sampleGoals: Goal[] = [
   {
     id: '1',
-    type: 'weight',
-    target: 68,
-    unit: 'kg',
-    deadline: '2025-08-01',
-    currentValue: 71,
+    title: 'Increase Daily Steps',
+    description: 'Walk more steps every day to improve cardiovascular health',
+    category: 'fitness',
+    startValue: 3000, // Added missing property
+    currentValue: 7500,
+    targetValue: 10000,
+    unit: 'steps',
+    deadline: '2025-06-30',
+    createdAt: '2025-04-01',
   },
   {
     id: '2',
-    type: 'workout',
-    target: 5,
-    unit: 'sessions',
-    currentValue: 3,
+    title: 'Reduce Body Weight',
+    description: 'Lose weight to reach ideal BMI',
+    category: 'weight',
+    startValue: 85, // Added missing property
+    currentValue: 80,
+    targetValue: 75,
+    unit: 'kg',
+    deadline: '2025-07-15',
+    createdAt: '2025-04-01',
   },
   {
     id: '3',
-    type: 'hydration',
-    target: 8,
-    unit: 'glasses',
-    currentValue: 6,
+    title: 'Improve Sleep Quality',
+    description: 'Get more restful sleep each night',
+    category: 'sleep',
+    startValue: 5.5, // Added missing property
+    currentValue: 6.5,
+    targetValue: 8,
+    unit: 'hours',
+    deadline: '2025-05-30',
+    createdAt: '2025-04-01',
+  },
+  {
+    id: '4',
+    title: 'Increase Water Intake',
+    description: 'Drink more water daily for better hydration',
+    category: 'nutrition',
+    startValue: 1.5, // Added missing property
+    currentValue: 2.2,
+    targetValue: 3,
+    unit: 'liters',
+    deadline: '2025-05-15',
+    createdAt: '2025-04-01',
   },
 ];
 
-type GoalsProps = {
-  user: AuthUser;
-};
+const Goals = () => {
+  const { user } = useAuth();
+  const [goals, setGoals] = useState<Goal[]>(sampleGoals);
+  const [isGoalSettingOpen, setIsGoalSettingOpen] = useState(false);
+  const [editingGoalId, setEditingGoalId] = useState<string | null>(null);
 
-const Goals = ({ user }: GoalsProps) => {
-  const [goals, setGoals] = useState<Goal[]>(mockGoals);
-  
-  const handleAddGoal = (goalData: Omit<Goal, 'id'>) => {
-    const newGoal = {
-      ...goalData,
+  const handleOpenGoalSetting = () => {
+    setIsGoalSettingOpen(true);
+    setEditingGoalId(null);
+  };
+
+  const handleCloseGoalSetting = () => {
+    setIsGoalSettingOpen(false);
+    setEditingGoalId(null);
+  };
+
+  const handleAddGoal = (newGoal: Omit<Goal, 'id' | 'createdAt'>) => {
+    const goalToAdd = {
+      ...newGoal,
       id: uuidv4(),
+      createdAt: new Date().toISOString(),
     };
-    
-    setGoals([newGoal, ...goals]);
-  };
-  
-  const handleUpdateGoal = (id: string, currentValue: number) => {
-    setGoals(goals.map(goal => 
-      goal.id === id ? { ...goal, currentValue } : goal
-    ));
-  };
-  
-  const handleDeleteGoal = (id: string) => {
-    setGoals(goals.filter(goal => goal.id !== id));
+    setGoals([goalToAdd, ...goals]);
+    setIsGoalSettingOpen(false);
   };
 
-  // Calculate goal progress percentages
-  const getGoalProgressPercentage = (goal: Goal) => {
-    if (goal.type === 'weight') {
-      // For weight loss, we calculate differently
-      const startWeight = goal.startValue || goal.currentValue + 5; // Assume starting weight if not provided
-      const targetDiff = startWeight - goal.target;
-      const currentDiff = startWeight - goal.currentValue;
-      return Math.min(Math.floor((currentDiff / targetDiff) * 100), 100);
-    }
-    
-    // For other goals
-    return Math.min(Math.floor((goal.currentValue / goal.target) * 100), 100);
+  const handleEditGoal = (goalId: string) => {
+    setEditingGoalId(goalId);
+    setIsGoalSettingOpen(true);
   };
-  
+
+  const handleUpdateGoal = (updatedGoal: Goal) => {
+    const updatedGoals = goals.map(goal =>
+      goal.id === updatedGoal.id ? updatedGoal : goal
+    );
+    setGoals(updatedGoals);
+    setIsGoalSettingOpen(false);
+    setEditingGoalId(null);
+  };
+
+  const handleDeleteGoal = (goalId: string) => {
+    const updatedGoals = goals.filter(goal => goal.id !== goalId);
+    setGoals(updatedGoals);
+  };
+
+  const editingGoal = editingGoalId ? goals.find(goal => goal.id === editingGoalId) : null;
+
   return (
-    <div className="space-y-8">
-      <div className="proglo-section-header">
-        <h1 className="text-3xl font-bold proglo-gradient-text flex items-center">
-          <Target className="mr-2 text-proglo-purple" size={28} />
-          Goals
-        </h1>
-        <p className="text-gray-600 mt-1">Set and track your health and fitness goals</p>
-      </div>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 animate-fade-in">
-          <GoalSetting 
-            goals={goals}
-            onAddGoal={handleAddGoal}
-            onUpdateGoal={handleUpdateGoal}
-            onDeleteGoal={handleDeleteGoal}
-          />
+    <div className="container mx-auto py-12">
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center">
+          <Dumbbell className="mr-2 h-6 w-6 text-proglo-purple" />
+          <h1 className="text-3xl font-bold proglo-gradient-text">Your Goals</h1>
         </div>
-        
-        <div className="lg:col-span-1 space-y-6">
-          <Card className="proglo-card animate-fade-in" style={{ animationDelay: "0.2s" }}>
-            <CardHeader className="proglo-card-header">
-              <CardTitle className="text-lg font-semibold flex items-center">
-                <Award size={18} className="mr-2 text-proglo-purple" />
-                Goals Summary
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-4">
-              <div className="space-y-4">
-                {goals.map(goal => (
-                  <div key={goal.id} className="bg-purple-50 p-3 rounded-md border border-purple-100">
-                    <div className="flex justify-between items-center mb-2">
-                      <div className="flex items-center">
-                        <span className="font-medium capitalize">{goal.type}</span>
-                      </div>
-                      <div className="text-sm">
-                        {goal.currentValue} / {goal.target} {goal.unit}
-                      </div>
-                    </div>
-                    <Progress 
-                      value={getGoalProgressPercentage(goal)}
-                      className="h-2 bg-purple-100"
-                    />
-                    <div className="flex justify-between mt-2 text-xs text-gray-600">
-                      <div className="flex items-center">
-                        <TrendingUp size={12} className="mr-1" />
-                        <span>{getGoalProgressPercentage(goal)}% complete</span>
-                      </div>
-                      {goal.deadline && (
-                        <div className="flex items-center">
-                          <Calendar size={12} className="mr-1" />
-                          <span>Due: {new Date(goal.deadline).toLocaleDateString()}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+        <Button onClick={handleOpenGoalSetting} className="bg-proglo-purple hover:bg-proglo-dark-purple">
+          <Plus className="mr-2 h-4 w-4" />
+          Add New Goal
+        </Button>
+      </div>
 
-              {goals.length > 0 && (
-                <div className="mt-6 p-3 bg-green-50 rounded-md border border-green-100">
-                  <h4 className="text-sm font-medium text-green-800 flex items-center">
-                    <Check size={16} className="mr-1" />
-                    Progress Tips
-                  </h4>
-                  <p className="text-xs text-gray-600 mt-1">
-                    Break your goals into smaller, achievable milestones. 
-                    Track your progress regularly and celebrate small wins along the way.
-                  </p>
-                </div>
-              )}
-              
-              {goals.length === 0 && (
-                <div className="mt-6 p-3 bg-blue-50 rounded-md border border-blue-100 text-center">
-                  <p className="text-sm text-blue-800">
-                    No goals set yet. Create your first goal to track your progress.
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-          
-          <Card className="proglo-card animate-fade-in" style={{ animationDelay: "0.3s" }}>
-            <CardHeader className="proglo-card-header">
-              <CardTitle className="text-lg font-semibold flex items-center">
-                <TrendingUp size={18} className="mr-2 text-proglo-purple" />
-                Goal Insights
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {goals.map(goal => (
+          <Card key={goal.id} className="fitness-card">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+              <CardTitle className="text-sm font-medium leading-none flex items-center">
+                {goal.title}
+                <span className="ml-2 workout-tag">{goal.category}</span>
               </CardTitle>
+              <div className="flex space-x-2">
+                <Button variant="ghost" size="icon" onClick={() => handleEditGoal(goal.id)}>
+                  <Edit2 className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon" onClick={() => handleDeleteGoal(goal.id)}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
             </CardHeader>
-            <CardContent className="pt-4">
-              <div className="space-y-3">
-                <div className="p-3 bg-purple-50 rounded-md border border-purple-100">
-                  <h4 className="font-medium text-sm">Top Goal</h4>
-                  <p className="text-sm text-gray-600">
-                    {goals.length > 0 
-                      ? `${goals[0].type} (${getGoalProgressPercentage(goals[0])}% complete)`
-                      : "No goals set yet"}
-                  </p>
+            <CardContent>
+              <p className="text-sm text-gray-500">{goal.description}</p>
+              <div className="mt-4">
+                <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
+                  <span>{goal.currentValue} {goal.unit}</span>
+                  <span>{goal.targetValue} {goal.unit}</span>
                 </div>
-                <div className="p-3 bg-purple-50 rounded-md border border-purple-100">
-                  <h4 className="font-medium text-sm">Active Goals</h4>
-                  <p className="text-sm text-gray-600">{goals.length} goals</p>
-                </div>
-                <div className="p-3 bg-purple-50 rounded-md border border-purple-100">
-                  <h4 className="font-medium text-sm">Completed Goals</h4>
-                  <p className="text-sm text-gray-600">
-                    {goals.filter(goal => 
-                      goal.type === 'weight' 
-                        ? goal.currentValue <= goal.target
-                        : goal.currentValue >= goal.target
-                    ).length} goals
-                  </p>
-                </div>
+                <Progress value={(goal.currentValue / goal.targetValue) * 100} className="h-2 rounded-full" />
+              </div>
+              <div className="mt-4 flex justify-between items-center">
+                <span className="text-xs text-gray-500">Deadline: {goal.deadline}</span>
+                <span className="text-xs text-gray-500">Created: {goal.createdAt.substring(0, 10)}</span>
               </div>
             </CardContent>
           </Card>
-        </div>
+        ))}
       </div>
+
+      <GoalSetting
+        open={isGoalSettingOpen}
+        onClose={handleCloseGoalSetting}
+        onAdd={handleAddGoal}
+        onUpdate={handleUpdateGoal}
+        goal={editingGoal}
+      />
     </div>
   );
 };

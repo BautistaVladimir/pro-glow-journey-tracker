@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '@/contexts/AuthContext';
-import { LogIn, User, Mail, Lock } from 'lucide-react';
+import { LogIn, User, Mail, Lock, Dumbbell } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -50,16 +50,21 @@ const Login = () => {
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-12rem)] items-center justify-center px-4 py-12">
-      <Card className="w-full max-w-md border-purple-100 shadow-lg animate-fade-in proglo-card">
-        <CardHeader className="space-y-2 text-center proglo-card-header">
-          <div className="mx-auto w-20 h-20 rounded-full bg-purple-50 flex items-center justify-center mb-2">
-            <LogIn className="h-10 w-10 text-proglo-purple" />
+    <div className="min-h-[calc(100vh-12rem)] bg-gradient-to-b from-purple-50 to-white flex items-center justify-center px-4 py-12">
+      <Card className="w-full max-w-md border-purple-200 shadow-xl animate-fade-in fitness-card">
+        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-proglo-purple to-purple-400"></div>
+        <CardHeader className="space-y-4 text-center pb-6">
+          <div className="mx-auto w-20 h-20 rounded-full bg-purple-50 flex items-center justify-center mb-2 border-2 border-purple-200">
+            <Dumbbell className="h-8 w-8 text-proglo-purple" strokeWidth={2.5} />
           </div>
-          <CardTitle className="text-2xl proglo-gradient-text">Welcome Back</CardTitle>
-          <CardDescription className="text-gray-600">Enter your credentials to access your account</CardDescription>
+          <div>
+            <CardTitle className="text-2xl font-bold text-gray-800">Welcome Back</CardTitle>
+            <CardDescription className="text-gray-600 mt-2">
+              Continue your fitness journey with Pro-Glo
+            </CardDescription>
+          </div>
         </CardHeader>
-        <CardContent className="pt-6">
+        <CardContent className="pt-2 px-8">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
               <FormField
@@ -74,7 +79,7 @@ const Login = () => {
                     <FormControl>
                       <Input 
                         placeholder="your.email@example.com" 
-                        className="border-purple-100 focus:border-proglo-purple focus:ring-proglo-purple/20"
+                        className="border-purple-100 focus:border-proglo-purple focus:ring-proglo-purple/20 h-11"
                         {...field} 
                       />
                     </FormControl>
@@ -95,7 +100,7 @@ const Login = () => {
                       <Input 
                         type="password" 
                         placeholder="••••••••" 
-                        className="border-purple-100 focus:border-proglo-purple focus:ring-proglo-purple/20"
+                        className="border-purple-100 focus:border-proglo-purple focus:ring-proglo-purple/20 h-11"
                         {...field} 
                       />
                     </FormControl>
@@ -105,7 +110,7 @@ const Login = () => {
               />
               <Button 
                 type="submit" 
-                className="w-full bg-proglo-purple hover:bg-proglo-dark-purple" 
+                className="w-full bg-gradient-to-r from-proglo-purple to-purple-600 hover:from-proglo-dark-purple hover:to-purple-700 h-11 font-medium" 
                 disabled={isLoading}
               >
                 {isLoading ? 'Logging in...' : 'Log in'}
@@ -113,7 +118,7 @@ const Login = () => {
             </form>
           </Form>
         </CardContent>
-        <CardFooter className="flex flex-col space-y-2 bg-gray-50 border-t border-purple-100 rounded-b-xl">
+        <CardFooter className="flex flex-col space-y-4 bg-gray-50 border-t border-purple-100 rounded-b-xl p-8">
           <div className="text-center text-sm">
             Don't have an account? <Link to="/register" className="text-proglo-purple font-medium hover:underline">Register</Link>
           </div>

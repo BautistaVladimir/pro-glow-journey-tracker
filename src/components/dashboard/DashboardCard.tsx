@@ -10,12 +10,12 @@ type DashboardCardProps = {
 
 const DashboardCard = ({ title, icon, children, className = '' }: DashboardCardProps) => {
   return (
-    <div className={`proglo-card ${className}`}>
-      <div className="flex items-center mb-4">
+    <div className={`fitness-card ${className}`}>
+      <div className="p-5 flex items-center border-b border-purple-100">
         {icon && <div className="mr-2 text-proglo-purple">{icon}</div>}
         <h3 className="font-semibold">{title}</h3>
       </div>
-      <div>{children}</div>
+      <div className="p-4">{children}</div>
     </div>
   );
 };

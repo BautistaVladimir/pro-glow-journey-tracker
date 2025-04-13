@@ -35,10 +35,14 @@
 
     --radius: 0.5rem;
     
+    /* Pro-Glo colors */
     --proglo-purple: #7c3aed;
     --proglo-light-purple: #c4b5fd;
     --proglo-dark-purple: #5b21b6;
     --proglo-green: #10b981;
+    --proglo-blue: #3b82f6;
+    --proglo-orange: #f59e0b;
+    --proglo-teal: #14b8a6;
   }
 
   .dark {
@@ -81,10 +85,20 @@
   }
 }
 
+/* Enhanced Gradients */
 .bg-purple-gradient {
   background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
 }
 
+.bg-fitness-gradient {
+  background: linear-gradient(120deg, #7c3aed 0%, #5b21b6 100%);
+}
+
+.bg-achievement-gradient {
+  background: linear-gradient(120deg, #c084fc 0%, #8b5cf6 100%);
+}
+
+/* Enhanced Animations */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -96,8 +110,49 @@
   }
 }
 
+@keyframes pulse {
+  0% {
+    transform: scale(0.97);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.97);
+    opacity: 0.8;
+  }
+}
+
+@keyframes heartbeat {
+  0% {
+    transform: scale(1);
+  }
+  14% {
+    transform: scale(1.1);
+  }
+  28% {
+    transform: scale(1);
+  }
+  42% {
+    transform: scale(1.1);
+  }
+  70% {
+    transform: scale(1);
+  }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.5s ease-out forwards;
+}
+
+.animate-pulse-slow {
+  animation: pulse 2.5s ease-in-out infinite;
+}
+
+.animate-heartbeat {
+  animation: heartbeat 1.5s infinite;
 }
 
 .hover-scale {
@@ -106,6 +161,29 @@
 
 .card-hover {
   @apply transition-all duration-300 hover:shadow-md hover:border-primary/20;
+}
+
+/* Enhanced Card Effects */
+.fitness-card {
+  @apply rounded-xl border border-purple-200 shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300
+         bg-white relative z-10;
+}
+
+.fitness-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 5px;
+  background: linear-gradient(90deg, var(--proglo-purple), var(--proglo-dark-purple));
+  z-index: 1;
+}
+
+.fitness-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 28px -5px rgba(124, 58, 237, 0.18), 0 10px 10px -6px rgba(124, 58, 237, 0.15);
+  border-color: rgba(124, 58, 237, 0.3);
 }
 
 /* Card hover effects */
@@ -120,7 +198,7 @@
 
 /* Enhanced card designs */
 .proglo-card {
-  @apply rounded-xl border border-purple-100 shadow-sm overflow-hidden hover:shadow-md transition-all duration-300;
+  @apply rounded-xl border border-purple-100 shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300;
 }
 
 .proglo-card-header {
@@ -139,9 +217,9 @@
   @apply bg-gradient-to-r from-purple-50 to-violet-50 rounded-xl p-6 border border-purple-100 mb-6 shadow-sm;
 }
 
-/* Form styles */
+/* Enhanced Form styles */
 .proglo-form-container {
-  @apply bg-white rounded-xl border border-purple-100 shadow-md overflow-hidden max-w-md w-full;
+  @apply bg-white rounded-xl border border-purple-100 shadow-lg overflow-hidden max-w-md w-full;
 }
 
 .proglo-form-header {
@@ -156,9 +234,9 @@
   @apply p-6 bg-gray-50 border-t border-purple-100 flex justify-center;
 }
 
-/* Dashboard card styles */
+/* Enhanced Dashboard card styles */
 .dashboard-stat-card {
-  @apply bg-white rounded-xl border border-purple-100 p-4 shadow-sm hover:shadow-md transition-all duration-300;
+  @apply bg-white rounded-xl border border-purple-100 p-5 shadow-sm hover:shadow-md transition-all duration-300;
 }
 
 .dashboard-stat-value {
@@ -181,6 +259,19 @@
   opacity: 0;
 }
 
+/* Fitness UI Components */
+.fitness-progress-ring {
+  @apply relative inline-flex items-center justify-center;
+}
+
+.fitness-achievement-badge {
+  @apply rounded-full bg-purple-100 p-2 flex items-center justify-center border-2 border-purple-300;
+}
+
+.fitness-metric-card {
+  @apply rounded-xl bg-white p-4 shadow-sm border border-purple-100 hover:shadow-md transition-all duration-300;
+}
+
 /* Page transition animations */
 .page-enter {
   opacity: 0;
@@ -191,4 +282,25 @@
   opacity: 1;
   transform: translateY(0);
   transition: opacity 300ms, transform 300ms;
+}
+
+/* Additional Fitness-themed components */
+.goal-progress-bar {
+  @apply h-2 bg-gray-200 rounded-full overflow-hidden;
+}
+
+.goal-progress-bar-fill {
+  @apply h-full bg-gradient-to-r from-proglo-purple to-purple-400 transition-all duration-500;
+}
+
+.workout-tag {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800;
+}
+
+.nutrition-tag {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800;
+}
+
+.sleep-tag {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800;
 }

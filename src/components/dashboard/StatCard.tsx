@@ -8,6 +8,7 @@ type StatCardProps = {
   trend?: 'up' | 'down' | 'neutral';
   trendValue?: string;
   color?: 'purple' | 'blue' | 'green' | 'orange' | 'teal';
+  className?: string; // Added className prop
 };
 
 const StatCard = ({ 
@@ -16,7 +17,8 @@ const StatCard = ({
   icon, 
   trend, 
   trendValue,
-  color = 'purple'
+  color = 'purple',
+  className = '' // Default empty string
 }: StatCardProps) => {
   const colorClasses = {
     purple: 'text-proglo-purple',
@@ -35,9 +37,9 @@ const StatCard = ({
   };
 
   return (
-    <div className="proglo-card flex flex-col">
+    <div className={`fitness-card flex flex-col p-5 ${className}`}>
       <div className="flex justify-between items-start mb-2">
-        <p className="stat-label">{label}</p>
+        <p className="text-gray-600 font-medium">{label}</p>
         {icon && (
           <div className={`p-2 rounded-full ${bgColorClasses[color]}`}>
             <span className={colorClasses[color]}>{icon}</span>
@@ -45,7 +47,7 @@ const StatCard = ({
         )}
       </div>
       <div className="flex items-baseline">
-        <p className={`stat-value ${colorClasses[color]}`}>{value}</p>
+        <p className={`text-2xl font-bold ${colorClasses[color]}`}>{value}</p>
         {trend && trendValue && (
           <span className={`ml-2 text-xs ${
             trend === 'up' 
