@@ -8,7 +8,7 @@ type StatCardProps = {
   trend?: 'up' | 'down' | 'neutral';
   trendValue?: string;
   color?: 'purple' | 'blue' | 'green' | 'orange' | 'teal';
-  className?: string; // Added className prop
+  className?: string;
 };
 
 const StatCard = ({ 
@@ -18,7 +18,7 @@ const StatCard = ({
   trend, 
   trendValue,
   color = 'purple',
-  className = '' // Default empty string
+  className = ''
 }: StatCardProps) => {
   const colorClasses = {
     purple: 'text-proglo-purple',
@@ -36,12 +36,25 @@ const StatCard = ({
     teal: 'bg-proglo-teal/10',
   };
 
+  const gradientBorderClasses = {
+    purple: 'before:from-proglo-purple before:to-purple-400',
+    blue: 'before:from-proglo-blue before:to-blue-400',
+    green: 'before:from-proglo-green before:to-green-400',
+    orange: 'before:from-proglo-orange before:to-orange-400',
+    teal: 'before:from-proglo-teal before:to-teal-400',
+  };
+
   return (
-    <div className={`fitness-card flex flex-col p-5 ${className}`}>
-      <div className="flex justify-between items-start mb-2">
+    <div className={`
+      fitness-card flex flex-col p-5 relative overflow-hidden transition-all duration-300 
+      hover:-translate-y-1 hover:shadow-lg
+      before:absolute before:bottom-0 before:left-0 before:h-1 before:w-full
+      before:bg-gradient-to-r ${gradientBorderClasses[color]} ${className}
+    `}>
+      <div className="flex justify-between items-start mb-3">
         <p className="text-gray-600 font-medium">{label}</p>
         {icon && (
-          <div className={`p-2 rounded-full ${bgColorClasses[color]}`}>
+          <div className={`p-2 rounded-full ${bgColorClasses[color]} transform transition-transform duration-300 hover:scale-110`}>
             <span className={colorClasses[color]}>{icon}</span>
           </div>
         )}
@@ -49,7 +62,7 @@ const StatCard = ({
       <div className="flex items-baseline">
         <p className={`text-2xl font-bold ${colorClasses[color]}`}>{value}</p>
         {trend && trendValue && (
-          <span className={`ml-2 text-xs ${
+          <span className={`ml-2 text-xs flex items-center ${
             trend === 'up' 
               ? 'text-proglo-green' 
               : trend === 'down' 
