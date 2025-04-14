@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X, Home, Activity, Apple, Moon, Target, Shield } from 'lucide-react';
@@ -51,7 +50,7 @@ const Navbar = () => {
                 <img 
                   src="/lovable-uploads/d07601be-d85e-4bba-b589-4ea61e7bcd9f.png" 
                   alt="ProGlo Logo" 
-                  className="h-8 w-auto" 
+                  className="h-12 w-auto" // Increased from h-8 to h-12
                 />
               </div>
               <span className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-proglo-purple to-proglo-dark-purple group-hover:from-proglo-dark-purple group-hover:to-proglo-purple transition-all duration-300">
