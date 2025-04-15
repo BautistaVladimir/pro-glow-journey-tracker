@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Dumbbell, Target, Award, Plus, Edit2, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,7 +15,7 @@ export type Goal = {
   category: 'fitness' | 'nutrition' | 'sleep' | 'weight' | 'other';
   targetValue: number;
   currentValue: number;
-  startValue: number; // Added missing property
+  startValue: number;
   unit: string;
   deadline: string;
   createdAt: string;
@@ -27,7 +28,7 @@ const sampleGoals: Goal[] = [
     title: 'Increase Daily Steps',
     description: 'Walk more steps every day to improve cardiovascular health',
     category: 'fitness',
-    startValue: 3000, // Added missing property
+    startValue: 3000,
     currentValue: 7500,
     targetValue: 10000,
     unit: 'steps',
@@ -39,7 +40,7 @@ const sampleGoals: Goal[] = [
     title: 'Reduce Body Weight',
     description: 'Lose weight to reach ideal BMI',
     category: 'weight',
-    startValue: 85, // Added missing property
+    startValue: 85,
     currentValue: 80,
     targetValue: 75,
     unit: 'kg',
@@ -51,7 +52,7 @@ const sampleGoals: Goal[] = [
     title: 'Improve Sleep Quality',
     description: 'Get more restful sleep each night',
     category: 'sleep',
-    startValue: 5.5, // Added missing property
+    startValue: 5.5,
     currentValue: 6.5,
     targetValue: 8,
     unit: 'hours',
@@ -63,7 +64,7 @@ const sampleGoals: Goal[] = [
     title: 'Increase Water Intake',
     description: 'Drink more water daily for better hydration',
     category: 'nutrition',
-    startValue: 1.5, // Added missing property
+    startValue: 1.5,
     currentValue: 2.2,
     targetValue: 3,
     unit: 'liters',

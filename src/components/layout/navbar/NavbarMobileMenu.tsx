@@ -28,7 +28,7 @@ export const NavbarMobileMenu = ({ isOpen, onClose, navItems, handleLogout }: Na
       <div className="px-2 pt-2 pb-4 space-y-2 sm:px-3">
         {user ? (
           <>
-            {navItems.map((item) => (
+            {navItems && navItems.length > 0 && navItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
