@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dumbbell, Target, Award, Plus, Edit2, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,19 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/contexts/AuthContext';
 import { v4 as uuidv4 } from '@/lib/utils';
 import GoalSetting from '@/components/goals/GoalSetting';
-
-export type Goal = {
-  id: string;
-  title: string;
-  description: string;
-  category: 'fitness' | 'nutrition' | 'sleep' | 'weight' | 'other';
-  targetValue: number;
-  currentValue: number;
-  startValue: number;
-  unit: string;
-  deadline: string;
-  createdAt: string;
-};
+import { Goal, GoalFormData } from '@/components/goals/types';
 
 // Sample goals data
 const sampleGoals: Goal[] = [
@@ -89,7 +76,7 @@ const Goals = () => {
     setEditingGoalId(null);
   };
 
-  const handleAddGoal = (newGoal: Omit<Goal, 'id' | 'createdAt'>) => {
+  const handleAddGoal = (newGoal: GoalFormData) => {
     const goalToAdd = {
       ...newGoal,
       id: uuidv4(),
