@@ -19,7 +19,7 @@ export const NavbarLinks = ({ navItems }: NavbarLinksProps) => {
   
   return (
     <div className="hidden md:flex items-center space-x-1">
-      {navItems && navItems.length > 0 && navItems.map((item) => (
+      {navItems && navItems.length > 0 ? navItems.map((item) => (
         <TooltipProvider key={item.path} delayDuration={300}>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -45,7 +45,7 @@ export const NavbarLinks = ({ navItems }: NavbarLinksProps) => {
             )}
           </Tooltip>
         </TooltipProvider>
-      ))}
+      )) : null}
     </div>
   );
 };

@@ -48,10 +48,10 @@ const AppRoutes = () => {
       {/* Protected Routes (require login) */}
       <Route element={<PrivateRoute />}>
         <Route path="/" element={<Dashboard />} />
-        <Route path="/bmi" element={<BMI />} />
-        <Route path="/activities" element={<Activities />} />
-        <Route path="/nutrition" element={<Nutrition />} />
-        <Route path="/sleep" element={<Sleep />} />
+        <Route path="/bmi" element={<BMI user={user} setUser={updateUserProfile} />} />
+        <Route path="/activities" element={<Activities user={user} />} />
+        <Route path="/nutrition" element={<Nutrition user={user} />} />
+        <Route path="/sleep" element={<Sleep user={user} />} />
         <Route path="/goals" element={<Goals />} />
         <Route path="/profile" element={<Profile />} />
       </Route>

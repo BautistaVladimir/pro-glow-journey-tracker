@@ -28,7 +28,7 @@ export const NavbarMobileMenu = ({ isOpen, onClose, navItems, handleLogout }: Na
       <div className="px-2 pt-2 pb-4 space-y-2 sm:px-3">
         {user ? (
           <>
-            {navItems && navItems.length > 0 && navItems.map((item) => (
+            {navItems && navItems.length > 0 ? navItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
@@ -40,7 +40,7 @@ export const NavbarMobileMenu = ({ isOpen, onClose, navItems, handleLogout }: Na
                 <span className="mr-3 text-proglo-purple">{item.icon}</span>
                 <span className="font-medium">{item.name}</span>
               </Link>
-            ))}
+            )) : null}
 
             <Link
               to="/profile"
