@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -20,12 +19,16 @@ export interface AuthUser {
 
 interface AuthContextType {
   user: AuthUser | null;
+  users: AuthUser[];
   isAuthenticated: boolean;
   isAdmin: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string, role: UserRole) => Promise<void>;
   logout: () => void;
   updateUserProfile: (userData: Partial<AuthUser>) => void;
+  addUser: (name: string, email: string, password: string, role: UserRole) => void;
+  deleteUser: (userId: string) => void;
+  updateUser: (userId: string, userData: Partial<AuthUser>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -84,7 +87,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   // Login function
   const login = async (email: string, password: string) => {
-    // In a real app, this would be an API call
     const foundUser = users.find(u => u.email.toLowerCase() === email.toLowerCase());
     
     if (!foundUser || MOCK_PASSWORDS[email.toLowerCase()] !== password) {
@@ -96,7 +98,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw new Error('Invalid credentials');
     }
     
-    // Success
     setUser(foundUser);
     localStorage.setItem('proglo-auth', JSON.stringify(foundUser));
     
@@ -110,7 +111,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   // Register function
   const register = async (name: string, email: string, password: string, role: UserRole = 'user') => {
-    // Check if email exists
     if (users.some(u => u.email.toLowerCase() === email.toLowerCase())) {
       toast({
         title: "Registration Failed",
@@ -120,7 +120,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw new Error('Email already in use');
     }
     
-    // Create new user
     const newUser: AuthUser = {
       id: String(users.length + 1),
       email: email.toLowerCase(),
@@ -129,13 +128,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       avatar: null,
     };
     
-    // Add to mock database
     const updatedUsers = [...users, newUser];
     setUsers(updatedUsers);
-    // Add password to mock database
     MOCK_PASSWORDS[email.toLowerCase()] = password;
     
-    // Log in automatically
     setUser(newUser);
     localStorage.setItem('proglo-auth', JSON.stringify(newUser));
     
@@ -165,13 +161,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const updatedUser = { ...user, ...userData };
     setUser(updatedUser);
     
-    // Update in users array too
     const updatedUsers = users.map(u => 
       u.id === user.id ? { ...u, ...userData } : u
     );
     setUsers(updatedUsers);
     
-    // Update in localStorage
     localStorage.setItem('proglo-auth', JSON.stringify(updatedUser));
     
     toast({
@@ -180,16 +174,85 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
   
+  // Admin functions for user management
+  const addUser = (name: string, email: string, password: string, role: UserRole = 'user') => {
+    if (users.some(u => u.email.toLowerCase() === email.toLowerCase())) {
+      toast({
+        title: "User Creation Failed",
+        description: "Email already in use",
+        variant: "destructive",
+      });
+      throw new Error('Email already in use');
+    }
+    
+    const newUser: AuthUser = {
+      id: String(users.length + 1),
+      email: email.toLowerCase(),
+      name,
+      role,
+      avatar: null,
+    };
+    
+    const updatedUsers = [...users, newUser];
+    setUsers(updatedUsers);
+    
+    MOCK_PASSWORDS[email.toLowerCase()] = password;
+    
+    toast({
+      title: "User Created",
+      description: `${name} has been added successfully`,
+    });
+  };
+  
+  const deleteUser = (userId: string) => {
+    if (user && userId === user.id) {
+      toast({
+        title: "Deletion Failed",
+        description: "Cannot delete your own account while logged in",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const userToDelete = users.find(u => u.id === userId);
+    if (!userToDelete) return;
+    
+    const updatedUsers = users.filter(u => u.id !== userId);
+    setUsers(updatedUsers);
+    
+    if (userToDelete.email in MOCK_PASSWORDS) {
+      delete MOCK_PASSWORDS[userToDelete.email];
+    }
+  };
+  
+  const updateUser = (userId: string, userData: Partial<AuthUser>) => {
+    const updatedUsers = users.map(u => 
+      u.id === userId ? { ...u, ...userData } : u
+    );
+    
+    setUsers(updatedUsers);
+    
+    if (user && userId === user.id) {
+      const updatedUser = { ...user, ...userData };
+      setUser(updatedUser);
+      localStorage.setItem('proglo-auth', JSON.stringify(updatedUser));
+    }
+  };
+  
   return (
     <AuthContext.Provider
       value={{
         user,
+        users,
         isAuthenticated: !!user,
         isAdmin: user?.role === 'admin',
         login,
         register,
         logout,
         updateUserProfile,
+        addUser,
+        deleteUser,
+        updateUser,
       }}
     >
       {children}
