@@ -1,6 +1,9 @@
 
-import { API_URL, SANCTUM_COOKIE_ENDPOINT } from "@/config/api";
+import { API_URL, SANCTUM_COOKIE_ENDPOINT, ENDPOINTS } from "@/config/api";
 
+/**
+ * Response interface for API calls
+ */
 interface ApiResponse<T> {
   data?: T;
   error?: string;
@@ -8,8 +11,14 @@ interface ApiResponse<T> {
   status?: number;
 }
 
+/**
+ * API service for Laravel 11 backend
+ */
 export const api = {
-  // Fetch CSRF token
+  // Endpoints reference for convenient access
+  endpoints: ENDPOINTS,
+  
+  // Fetch CSRF token from Laravel Sanctum
   async getCsrfToken(): Promise<string | null> {
     try {
       const response = await fetch(`${API_URL}${SANCTUM_COOKIE_ENDPOINT}`, {
