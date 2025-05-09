@@ -1,16 +1,18 @@
 
-import { API_URL } from "@/config/api";
+import { API_URL, SANCTUM_COOKIE_ENDPOINT } from "@/config/api";
 
 interface ApiResponse<T> {
   data?: T;
   error?: string;
+  message?: string;
+  status?: number;
 }
 
 export const api = {
   // Fetch CSRF token
   async getCsrfToken(): Promise<string | null> {
     try {
-      const response = await fetch(`${API_URL}/sanctum/csrf-cookie`, {
+      const response = await fetch(`${API_URL}${SANCTUM_COOKIE_ENDPOINT}`, {
         method: 'GET',
         credentials: 'include'
       });
@@ -30,19 +32,24 @@ export const api = {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
         },
         credentials: 'include'
       });
       
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Network response was not ok');
       }
       
       const data = await response.json();
-      return { data };
+      return { data, status: response.status };
     } catch (error) {
       console.error('API Error:', error);
-      return { error: 'An error occurred while fetching data' };
+      return { 
+        error: error instanceof Error ? error.message : 'An error occurred while fetching data',
+        status: 500
+      };
     }
   },
 
@@ -69,10 +76,76 @@ export const api = {
       }
       
       const data = await response.json();
-      return { data };
+      return { data, status: response.status };
     } catch (error) {
       console.error('API Error:', error);
-      return { error: error instanceof Error ? error.message : 'An error occurred while posting data' };
+      return { 
+        error: error instanceof Error ? error.message : 'An error occurred while posting data',
+        status: 500
+      };
+    }
+  },
+  
+  // Generic PUT request
+  async put<T>(endpoint: string, body: any): Promise<ApiResponse<T>> {
+    try {
+      await this.getCsrfToken();
+
+      const response = await fetch(`${API_URL}${endpoint}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        credentials: 'include',
+        body: JSON.stringify(body)
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Network response was not ok');
+      }
+      
+      const data = await response.json();
+      return { data, status: response.status };
+    } catch (error) {
+      console.error('API Error:', error);
+      return { 
+        error: error instanceof Error ? error.message : 'An error occurred while updating data',
+        status: 500
+      };
+    }
+  },
+  
+  // Generic DELETE request
+  async delete<T>(endpoint: string): Promise<ApiResponse<T>> {
+    try {
+      await this.getCsrfToken();
+
+      const response = await fetch(`${API_URL}${endpoint}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Network response was not ok');
+      }
+      
+      const data = await response.json();
+      return { data, status: response.status };
+    } catch (error) {
+      console.error('API Error:', error);
+      return { 
+        error: error instanceof Error ? error.message : 'An error occurred while deleting data',
+        status: 500
+      };
     }
   }
 };
