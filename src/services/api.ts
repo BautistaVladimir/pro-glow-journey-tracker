@@ -23,7 +23,7 @@ export const api = {
     try {
       const response = await fetch(`${API_URL}${SANCTUM_COOKIE_ENDPOINT}`, {
         method: 'GET',
-        credentials: 'include'
+        // Remove credentials: 'include' to fix CORS issues
       });
       
       return response.ok ? 'Token fetched successfully' : null;
@@ -43,7 +43,7 @@ export const api = {
           'Accept': 'application/json',
           'X-Requested-With': 'XMLHttpRequest',
         },
-        credentials: 'include'
+        // Remove credentials: 'include' to fix CORS issues
       });
       
       if (!response.ok) {
@@ -75,7 +75,7 @@ export const api = {
           'Accept': 'application/json',
           'X-Requested-With': 'XMLHttpRequest', // Important for Laravel
         },
-        credentials: 'include',
+        // Remove credentials: 'include' to fix CORS issues
         body: JSON.stringify(body)
       });
       
@@ -107,7 +107,7 @@ export const api = {
           'Accept': 'application/json',
           'X-Requested-With': 'XMLHttpRequest',
         },
-        credentials: 'include',
+        // Remove credentials: 'include' to fix CORS issues
         body: JSON.stringify(body)
       });
       
@@ -139,7 +139,7 @@ export const api = {
           'Accept': 'application/json',
           'X-Requested-With': 'XMLHttpRequest',
         },
-        credentials: 'include'
+        // Remove credentials: 'include' to fix CORS issues
       });
       
       if (!response.ok) {
