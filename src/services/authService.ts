@@ -1,4 +1,3 @@
-
 import axios from 'axios';
 import { API_URL } from '@/config/api';
 import { LoginCredentials, RegisterData, AuthUser } from '@/types/auth';
@@ -11,7 +10,8 @@ const authAxios = axios.create({
     'Accept': 'application/json',
     'X-Requested-With': 'XMLHttpRequest',
   },
-  withCredentials: true, // Important for cookies/CSRF if your Laravel uses Sanctum
+  // Remove withCredentials to fix CORS issues
+  // withCredentials: true,
 });
 
 // Add interceptor to add token to every request
@@ -30,6 +30,12 @@ authAxios.interceptors.request.use(
 authAxios.interceptors.response.use(
   (response) => response,
   async (error) => {
+    // If there's no error response, don't try to access status
+    if (!error.response) {
+      console.error('Network error or CORS issue:', error.message);
+      return Promise.reject(error);
+    }
+    
     const originalRequest = error.config;
     
     // If error is 401 and we haven't tried to refresh token yet
@@ -71,8 +77,10 @@ const authService = {
       localStorage.setItem('user', JSON.stringify(user));
       
       return user;
-    } catch (error) {
-      console.error('Login error:', error);
+    } catch (error: any) {
+      // Better error handling
+      const errorMsg = error.response?.data?.message || 'Login failed. Please check your credentials or network connection.';
+      console.error('Login error:', errorMsg, error);
       throw error;
     }
   },
@@ -87,8 +95,10 @@ const authService = {
       localStorage.setItem('user', JSON.stringify(user));
       
       return user;
-    } catch (error) {
-      console.error('Registration error:', error);
+    } catch (error: any) {
+      // Better error handling
+      const errorMsg = error.response?.data?.message || 'Registration failed. Please try again later.';
+      console.error('Registration error:', errorMsg, error);
       throw error;
     }
   },
