@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import BMICalculator from '@/components/bmi/BMICalculator';
@@ -8,7 +7,7 @@ import { Activity, TrendingDown, Award, Info } from 'lucide-react';
 
 type BMIProps = {
   user: AuthUser | null;
-  setUser: (user: any) => void;
+  setUser: (userData: Partial<AuthUser>) => Promise<AuthUser | undefined>;
 };
 
 // Mock BMI history data
@@ -28,7 +27,6 @@ const BMI = ({ user, setUser }: BMIProps) => {
     
     // Update user data
     setUser({
-      ...user,
       height,
       weight,
     });

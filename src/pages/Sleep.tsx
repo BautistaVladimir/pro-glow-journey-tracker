@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Moon, TrendingUp, Clock, Calendar, AlertCircle } from 'lucide-react';
 import SleepTracker, { SleepEntry } from '@/components/tracking/SleepTracker';
@@ -18,7 +19,7 @@ const mockSleepEntries: SleepEntry[] = [
 ];
 
 type SleepProps = {
-  user: AuthUser;
+  user: AuthUser | null;
 };
 
 const Sleep = ({ user }: SleepProps) => {

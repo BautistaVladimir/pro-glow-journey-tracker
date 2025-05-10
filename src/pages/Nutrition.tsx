@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Apple, Droplet, Filter, Utensils, Coffee, FileBarChart } from 'lucide-react';
 import NutritionTracker, { NutritionEntry } from '@/components/tracking/NutritionTracker';
@@ -43,7 +44,7 @@ const mockNutritionEntries: NutritionEntry[] = [
 ];
 
 type NutritionProps = {
-  user: AuthUser;
+  user: AuthUser | null;
 };
 
 const Nutrition = ({ user }: NutritionProps) => {

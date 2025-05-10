@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Activity, TrendingUp, Calendar, Award } from 'lucide-react';
 import ActivityTracker, { Activity as ActivityType } from '@/components/tracking/ActivityTracker';
@@ -57,7 +58,7 @@ const mockActivityChartData = [
 ];
 
 type ActivitiesProps = {
-  user: AuthUser;
+  user: AuthUser | null;
 };
 
 const Activities = ({ user }: ActivitiesProps) => {
