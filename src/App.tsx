@@ -23,48 +23,20 @@ import Admin from "./pages/Admin";
 // Layout components
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
-import PrivateRoute from "./components/auth/PrivateRoute";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 // Auth context
-import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { AuthProvider } from "./contexts/AuthContext";
 
-const queryClient = new QueryClient();
-
-const AppRoutes = () => {
-  const { user, updateUserProfile } = useAuth();
-
-  const handleUpdateUser = (userData: any) => {
-    updateUserProfile(userData);
-  };
-
-  return (
-    <Routes>
-      {/* Public Routes */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/admin-login" element={<AdminLogin />} />
-      <Route path="/admin-register" element={<AdminRegister />} />
-      
-      {/* Protected Routes (require login) */}
-      <Route element={<PrivateRoute />}>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/bmi" element={<BMI user={user} setUser={updateUserProfile} />} />
-        <Route path="/activities" element={<Activities user={user} />} />
-        <Route path="/nutrition" element={<Nutrition user={user} />} />
-        <Route path="/sleep" element={<Sleep user={user} />} />
-        <Route path="/goals" element={<Goals />} />
-        <Route path="/profile" element={<Profile />} />
-      </Route>
-      
-      {/* Admin Routes */}
-      <Route element={<PrivateRoute requireAdmin={true} />}>
-        <Route path="/admin" element={<Admin />} />
-      </Route>
-      
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-  );
-};
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
 
 const App = () => {
   return (
@@ -75,7 +47,31 @@ const App = () => {
             <div className="min-h-screen flex flex-col">
               <Navbar />
               <main className="flex-grow px-4 py-8 md:px-8 max-w-7xl mx-auto w-full">
-                <AppRoutes />
+                <Routes>
+                  {/* Public Routes */}
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/admin-login" element={<AdminLogin />} />
+                  <Route path="/admin-register" element={<AdminRegister />} />
+                  
+                  {/* Protected Routes (require login) */}
+                  <Route element={<ProtectedRoute />}>
+                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/bmi" element={<BMI />} />
+                    <Route path="/activities" element={<Activities />} />
+                    <Route path="/nutrition" element={<Nutrition />} />
+                    <Route path="/sleep" element={<Sleep />} />
+                    <Route path="/goals" element={<Goals />} />
+                    <Route path="/profile" element={<Profile />} />
+                  </Route>
+                  
+                  {/* Admin Routes */}
+                  <Route element={<ProtectedRoute requireAdmin={true} />}>
+                    <Route path="/admin" element={<Admin />} />
+                  </Route>
+                  
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
               </main>
               <Footer />
             </div>

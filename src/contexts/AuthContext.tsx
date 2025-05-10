@@ -3,132 +3,196 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { AuthUser, UserRole, AuthContextType } from '@/types/auth';
-import { mockAuthService } from '@/services/mockAuthService';
+import authService from '@/services/authService';
+import apiService from '@/services/apiService';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [users, setUsers] = useState<AuthUser[]>(mockAuthService.getUsers());
+  const [users, setUsers] = useState<AuthUser[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const { toast } = useToast();
   const navigate = useNavigate();
   
   // Check for stored auth on mount
   useEffect(() => {
-    const storedAuth = localStorage.getItem('proglo-auth');
-    if (storedAuth) {
+    const initAuth = async () => {
+      setLoading(true);
       try {
-        const parsedAuth = JSON.parse(storedAuth);
-        setUser(parsedAuth);
+        // Check if user is logged in
+        if (authService.isAuthenticated()) {
+          // Get user data from localStorage first for quick UI update
+          const storedUser = authService.getCurrentUser();
+          if (storedUser) {
+            setUser(storedUser);
+          }
+          
+          // Then refresh from server
+          try {
+            const freshUserData = await authService.refreshUserData();
+            setUser(freshUserData);
+          } catch (error) {
+            // If refresh fails, logout
+            await logout();
+          }
+          
+          // For admin users, fetch all users
+          if (storedUser?.role === 'admin') {
+            try {
+              const response = await apiService.getUserProfile();
+              if (response.users) {
+                setUsers(response.users);
+              }
+            } catch (error) {
+              console.error('Failed to fetch users list:', error);
+            }
+          }
+        }
       } catch (error) {
-        console.error('Failed to parse stored auth', error);
-        localStorage.removeItem('proglo-auth');
+        console.error('Auth initialization error:', error);
+      } finally {
+        setLoading(false);
       }
-    }
+    };
+    
+    initAuth();
   }, []);
   
   // Login function
   const login = async (email: string, password: string) => {
-    const foundUser = mockAuthService.getUserByEmail(email);
-    
-    if (!foundUser || !mockAuthService.validateCredentials(email, password)) {
+    try {
+      const loggedInUser = await authService.login({ email, password });
+      setUser(loggedInUser);
+      
+      toast({
+        title: "Login Successful",
+        description: `Welcome back, ${loggedInUser.name}!`,
+      });
+      
+      navigate('/');
+      return loggedInUser;
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Invalid email or password';
+      
       toast({
         title: "Login Failed",
-        description: "Invalid email or password",
+        description: errorMessage,
         variant: "destructive",
       });
-      throw new Error('Invalid credentials');
+      
+      throw error;
     }
-    
-    setUser(foundUser);
-    localStorage.setItem('proglo-auth', JSON.stringify(foundUser));
-    
-    toast({
-      title: "Login Successful",
-      description: `Welcome back, ${foundUser.name}!`,
-    });
-    
-    navigate('/');
   };
   
   // Register function
   const register = async (name: string, email: string, password: string, role: UserRole = 'user') => {
-    if (mockAuthService.getUserByEmail(email)) {
+    try {
+      const newUser = await authService.register({ name, email, password, role });
+      setUser(newUser);
+      
+      toast({
+        title: "Registration Successful",
+        description: "Your account has been created",
+      });
+      
+      navigate('/');
+      return newUser;
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Registration failed';
+      
       toast({
         title: "Registration Failed",
-        description: "Email already in use",
+        description: errorMessage,
         variant: "destructive",
       });
-      throw new Error('Email already in use');
+      
+      throw error;
     }
-    
-    const newUser = mockAuthService.createUser(name, email, password, role);
-    
-    setUsers([...users, newUser]);
-    setUser(newUser);
-    localStorage.setItem('proglo-auth', JSON.stringify(newUser));
-    
-    toast({
-      title: "Registration Successful",
-      description: "Your account has been created",
-    });
-    
-    navigate('/');
   };
   
   // Logout function
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('proglo-auth');
-    toast({
-      title: "Logged Out",
-      description: "You have been logged out successfully",
-    });
-    navigate('/login');
+  const logout = async () => {
+    try {
+      await authService.logout();
+      setUser(null);
+      
+      toast({
+        title: "Logged Out",
+        description: "You have been logged out successfully",
+      });
+      
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Even if the server request fails, clear local storage
+      authService.logout();
+      setUser(null);
+      navigate('/login');
+    }
   };
   
   // Update user profile
-  const updateUserProfile = (userData: Partial<AuthUser>) => {
+  const updateUserProfile = async (userData: Partial<AuthUser>) => {
     if (!user) return;
     
-    const updatedUser = { ...user, ...userData };
-    setUser(updatedUser);
-    
-    const updatedUserData = mockAuthService.updateUser(user.id, userData);
-    if (updatedUserData) {
-      const updatedUsers = users.map(u => u.id === user.id ? updatedUserData : u);
-      setUsers(updatedUsers);
+    try {
+      const updatedUser = await apiService.updateUserProfile({ ...userData, id: user.id });
       
-      localStorage.setItem('proglo-auth', JSON.stringify(updatedUser));
+      setUser({ ...user, ...updatedUser });
+      
+      // Update users array if this user exists there
+      if (users.some(u => u.id === user.id)) {
+        setUsers(users.map(u => u.id === user.id ? { ...u, ...updatedUser } : u));
+      }
       
       toast({
         title: "Profile Updated",
         description: "Your profile has been updated successfully",
       });
-    }
-  };
-  
-  // Admin functions for user management
-  const addUser = (name: string, email: string, password: string, role: UserRole = 'user') => {
-    if (mockAuthService.getUserByEmail(email)) {
+      
+      return updatedUser;
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Failed to update profile';
+      
       toast({
-        title: "User Creation Failed",
-        description: "Email already in use",
+        title: "Update Failed",
+        description: errorMessage,
         variant: "destructive",
       });
-      throw new Error('Email already in use');
+      
+      throw error;
     }
-    
-    const newUser = mockAuthService.createUser(name, email, password, role);
-    setUsers([...users, newUser]);
-    
-    toast({
-      title: "User Created",
-      description: `${name} has been added successfully`,
-    });
   };
   
-  const deleteUser = (userId: string) => {
+  // Admin functions for user management - these would connect to your Laravel API endpoints
+  const addUser = async (name: string, email: string, password: string, role: UserRole = 'user') => {
+    // This would be implemented to call your admin API endpoint
+    // For now we'll just use the register function but in reality would be a separate endpoint
+    try {
+      const newUser = await authService.register({ name, email, password, role });
+      setUsers([...users, newUser]);
+      
+      toast({
+        title: "User Created",
+        description: `${name} has been added successfully`,
+      });
+      
+      return newUser;
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Failed to create user';
+      
+      toast({
+        title: "User Creation Failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      
+      throw error;
+    }
+  };
+  
+  const deleteUser = async (userId: string) => {
     if (user && userId === user.id) {
       toast({
         title: "Deletion Failed",
@@ -138,22 +202,55 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
     
-    if (mockAuthService.deleteUser(userId)) {
+    try {
+      // This would call your delete user API endpoint
+      await apiService.deleteUser(userId);
       const updatedUsers = users.filter(u => u.id !== userId);
       setUsers(updatedUsers);
+      
+      toast({
+        title: "User Deleted",
+        description: "User has been deleted successfully",
+      });
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Failed to delete user';
+      
+      toast({
+        title: "Deletion Failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
     }
   };
   
-  const updateUser = (userId: string, userData: Partial<AuthUser>) => {
-    const updatedUser = mockAuthService.updateUser(userId, userData);
-    if (updatedUser) {
-      const updatedUsers = users.map(u => u.id === userId ? updatedUser : u);
+  const updateUser = async (userId: string, userData: Partial<AuthUser>) => {
+    try {
+      // This would call your update user API endpoint
+      const updatedUser = await apiService.updateUser(userId, userData);
+      const updatedUsers = users.map(u => u.id === userId ? { ...u, ...updatedUser } : u);
       setUsers(updatedUsers);
       
+      // If this is the current user, update that too
       if (user && userId === user.id) {
-        setUser(updatedUser);
-        localStorage.setItem('proglo-auth', JSON.stringify(updatedUser));
+        setUser({ ...user, ...updatedUser });
       }
+      
+      toast({
+        title: "User Updated",
+        description: "User has been updated successfully",
+      });
+      
+      return updatedUser;
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Failed to update user';
+      
+      toast({
+        title: "Update Failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      
+      throw error;
     }
   };
   
@@ -164,6 +261,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         users,
         isAuthenticated: !!user,
         isAdmin: user?.role === 'admin',
+        loading,
         login,
         register,
         logout,

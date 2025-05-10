@@ -32,11 +32,12 @@ export interface AuthContextType {
   users: AuthUser[];
   isAuthenticated: boolean;
   isAdmin: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string, role: UserRole) => Promise<void>;
-  logout: () => void;
-  updateUserProfile: (userData: Partial<AuthUser>) => void;
-  addUser: (name: string, email: string, password: string, role: UserRole) => void;
-  deleteUser: (userId: string) => void;
-  updateUser: (userId: string, userData: Partial<AuthUser>) => void;
+  loading: boolean; // Added loading state
+  login: (email: string, password: string) => Promise<AuthUser>;
+  register: (name: string, email: string, password: string, role: UserRole) => Promise<AuthUser>;
+  logout: () => Promise<void>;
+  updateUserProfile: (userData: Partial<AuthUser>) => Promise<AuthUser | undefined>;
+  addUser: (name: string, email: string, password: string, role: UserRole) => Promise<AuthUser | undefined>;
+  deleteUser: (userId: string) => Promise<void>;
+  updateUser: (userId: string, userData: Partial<AuthUser>) => Promise<AuthUser | undefined>;
 }
