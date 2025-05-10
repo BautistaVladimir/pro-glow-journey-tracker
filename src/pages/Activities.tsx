@@ -1,11 +1,10 @@
-
 import { useState } from 'react';
 import { Activity, TrendingUp, Calendar, Award } from 'lucide-react';
 import ActivityTracker, { Activity as ActivityType } from '@/components/tracking/ActivityTracker';
 import ProgressChart from '@/components/charts/ProgressChart';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { v4 as uuidv4 } from '@/lib/utils'; // Simulating UUID
-import { AuthUser } from '@/contexts/AuthContext';
+import { AuthUser } from '@/types/auth';
 
 // Mock activities data
 const mockActivities: ActivityType[] = [

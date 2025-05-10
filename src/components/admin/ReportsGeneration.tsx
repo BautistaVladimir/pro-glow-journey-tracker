@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { FileBarChart, Download, Calendar, BarChart2, LineChart, Activity, Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -7,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
-import { AuthUser } from "@/contexts/AuthContext";
+import { AuthUser } from "@/types/auth";
 
 // Define available report types with their descriptions
 const reportTypes = [

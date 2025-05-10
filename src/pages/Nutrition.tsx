@@ -1,11 +1,10 @@
-
 import { useState } from 'react';
 import { Apple, Droplet, Filter, Utensils, Coffee, FileBarChart } from 'lucide-react';
 import NutritionTracker, { NutritionEntry } from '@/components/tracking/NutritionTracker';
 import HydrationTracker, { HydrationEntry } from '@/components/tracking/HydrationTracker';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { v4 as uuidv4 } from '@/lib/utils'; // Simulating UUID
-import { AuthUser } from '@/contexts/AuthContext';
+import { AuthUser } from '@/types/auth';
 
 // Mock nutrition entries
 const mockNutritionEntries: NutritionEntry[] = [

@@ -1,11 +1,10 @@
-
 import { useState } from 'react';
 import { Moon, TrendingUp, Clock, Calendar, AlertCircle } from 'lucide-react';
 import SleepTracker, { SleepEntry } from '@/components/tracking/SleepTracker';
 import ProgressChart from '@/components/charts/ProgressChart';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { v4 as uuidv4 } from '@/lib/utils'; // Simulating UUID
-import { AuthUser } from '@/contexts/AuthContext';
+import { AuthUser } from '@/types/auth';
 
 // Mock sleep entries
 const mockSleepEntries: SleepEntry[] = [

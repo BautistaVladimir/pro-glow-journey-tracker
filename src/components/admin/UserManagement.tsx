@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import {
   Table,
@@ -24,7 +23,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AuthUser, UserRole } from "@/contexts/AuthContext";
+import { AuthUser, UserRole } from "@/types/auth";
 
 interface UserManagementProps {
   users: AuthUser[];
