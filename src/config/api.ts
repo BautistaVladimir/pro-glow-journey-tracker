@@ -12,10 +12,10 @@ export const SANCTUM_COOKIE_ENDPOINT = "/sanctum/csrf-cookie";
 // Laravel 11 API endpoints (can be expanded as needed)
 export const ENDPOINTS = {
   AUTH: {
-    LOGIN: "/auth/login",
-    REGISTER: "/auth/register",
-    LOGOUT: "/auth/logout",
-    USER: "/auth/user",
+    LOGIN: "/login",
+    REGISTER: "/register",
+    LOGOUT: "/logout",
+    USER: "/user",
   },
   USER: {
     PROFILE: "/user/profile",
