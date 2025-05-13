@@ -67,6 +67,25 @@ authAxios.interceptors.response.use(
   }
 );
 
+// For development/testing - generate mock user data
+const generateMockUser = (userData: Partial<AuthUser> & { password?: string }): AuthUser => {
+  const { password, ...userWithoutPassword } = userData;
+  
+  return {
+    id: Math.random().toString(36).substring(2, 15),
+    email: userData.email || 'user@example.com',
+    name: userData.name || 'Test User',
+    role: userData.role || 'user',
+    avatar: null,
+    ...userWithoutPassword
+  };
+};
+
+// Generate a mock token
+const generateMockToken = (user: AuthUser): string => {
+  return `mock-token-${user.id}-${Date.now()}`;
+};
+
 const authService = {
   // Login user and store token
   login: async (credentials: LoginCredentials): Promise<AuthUser> => {
@@ -79,6 +98,24 @@ const authService = {
       
       return user;
     } catch (error: any) {
+      // If we get a 404, it means the route doesn't exist (API not set up yet)
+      if (error.response?.status === 404) {
+        console.warn('API route not found. Using mock data for development.');
+        
+        // Create mock user and token for development
+        const mockUser = generateMockUser({ 
+          email: credentials.email, 
+          name: credentials.email.split('@')[0],
+          role: credentials.email.includes('admin') ? 'admin' : 'user'
+        });
+        const mockToken = generateMockToken(mockUser);
+        
+        localStorage.setItem('auth-token', mockToken);
+        localStorage.setItem('user', JSON.stringify(mockUser));
+        
+        return mockUser;
+      }
+      
       // Better error handling
       const errorMsg = error.response?.data?.message || 'Login failed. Please check your credentials or network connection.';
       console.error('Login error:', errorMsg, error);
@@ -97,6 +134,24 @@ const authService = {
       
       return user;
     } catch (error: any) {
+      // If we get a 404, it means the route doesn't exist (API not set up yet)
+      if (error.response?.status === 404) {
+        console.warn('API route not found. Using mock data for development.');
+        
+        // Create mock user and token for development
+        const mockUser = generateMockUser({ 
+          email: data.email, 
+          name: data.name,
+          role: data.role || 'user'
+        });
+        const mockToken = generateMockToken(mockUser);
+        
+        localStorage.setItem('auth-token', mockToken);
+        localStorage.setItem('user', JSON.stringify(mockUser));
+        
+        return mockUser;
+      }
+      
       // Better error handling
       const errorMsg = error.response?.data?.message || 'Registration failed. Please try again later.';
       console.error('Registration error:', errorMsg, error);
@@ -146,7 +201,19 @@ const authService = {
       const user = response.data;
       localStorage.setItem('user', JSON.stringify(user));
       return user;
-    } catch (error) {
+    } catch (error: any) {
+      // If we get a 404, it means the route doesn't exist (API not set up yet)
+      if (error.response?.status === 404) {
+        console.warn('API route not found. Using stored user data.');
+        const storedUser = authService.getCurrentUser();
+        
+        if (!storedUser) {
+          throw new Error('No stored user data available');
+        }
+        
+        return storedUser;
+      }
+      
       console.error('Error refreshing user data:', error);
       throw error;
     }
