@@ -6,7 +6,7 @@ import './index.css'
 // Check if API is available
 const checkApiAvailability = async () => {
   try {
-    const response = await fetch(import.meta.env.VITE_API_URL || "http://localhost:8000/api/health-check", {
+    const response = await fetch(import.meta.env.VITE_API_URL || "http://127.0.0.1:8000/api/health-check", {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
