@@ -21,9 +21,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(true);
       try {
         // Check if user is logged in
-        if (authService.isAuthenticated()) {
+        if (await authService.isAuthenticated()) {
           // Get user data from localStorage first for quick UI update
-          const storedUser = authService.getCurrentUser();
+          const storedUser = await authService.getCurrentUser();
           if (storedUser) {
             setUser(storedUser);
           }
@@ -38,7 +38,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
           
           // For admin users, fetch all users
-          if (storedUser?.role === 'admin') {
+          if (storedUser && storedUser.role === 'admin') {
             try {
               const response = await apiService.getUserProfile();
               if (response.users) {
