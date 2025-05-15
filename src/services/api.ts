@@ -24,7 +24,8 @@ export const api = {
         throw new Error(error.message || 'Network response was not ok');
       }
       
-      return { data, status: 200 };
+      // Use type assertion to handle the generic type properly
+      return { data: data as T, status: 200 };
     } catch (error) {
       console.error('API Error:', error);
       return { 
@@ -47,7 +48,8 @@ export const api = {
         throw new Error(error.message || 'Network response was not ok');
       }
       
-      return { data, status: 201 };
+      // Use type assertion to handle the generic type properly
+      return { data: data as T, status: 201 };
     } catch (error) {
       console.error('API Error:', error);
       return { 
@@ -71,7 +73,8 @@ export const api = {
         throw new Error(error.message || 'Network response was not ok');
       }
       
-      return { data, status: 200 };
+      // Use type assertion to handle the generic type properly
+      return { data: data as T, status: 200 };
     } catch (error) {
       console.error('API Error:', error);
       return { 
@@ -95,7 +98,8 @@ export const api = {
         throw new Error(error.message || 'Network response was not ok');
       }
       
-      return { data, status: 200 };
+      // Use type assertion to handle the generic type properly
+      return { data: data as T, status: 200 };
     } catch (error) {
       console.error('API Error:', error);
       return { 
