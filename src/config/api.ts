@@ -1,15 +1,9 @@
 
-// Configure the API URL based on the environment
-// In development, this would point to your Laravel 11 server (likely on a different port)
-export const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000/api";
+// Configure the API URL based on environment
+export const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "";
+export const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
 
-// API Version (useful for API versioning if implemented on Laravel side)
-export const API_VERSION = "v1";
-
-// Sanctum configuration for Laravel 11
-export const SANCTUM_COOKIE_ENDPOINT = "/sanctum/csrf-cookie";
-
-// Laravel 11 API endpoints (can be expanded as needed)
+// API endpoints for client-side data fetching
 export const ENDPOINTS = {
   AUTH: {
     LOGIN: "/auth/login",

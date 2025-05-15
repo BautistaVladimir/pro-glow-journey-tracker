@@ -1,71 +1,6 @@
 
-import axios from 'axios';
-import { API_URL } from '@/config/api';
-import { LoginCredentials, RegisterData, AuthUser } from '@/types/auth';
-
-// Create axios instance with baseURL
-const authAxios = axios.create({
-  baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'X-Requested-With': 'XMLHttpRequest',
-  },
-  // Remove withCredentials to fix CORS issues
-  // withCredentials: true,
-});
-
-// Add interceptor to add token to every request
-authAxios.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('auth-token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-// Interceptor to handle token expiration
-authAxios.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    // If there's no error response, don't try to access status
-    if (!error.response) {
-      console.error('Network error or CORS issue:', error.message);
-      return Promise.reject(error);
-    }
-    
-    const originalRequest = error.config;
-    
-    // If error is 401 and we haven't tried to refresh token yet
-    if (error.response.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      
-      try {
-        // Try to refresh token
-        const response = await authAxios.post('/auth/refresh');
-        const { token } = response.data;
-        
-        // Store new token
-        localStorage.setItem('auth-token', token);
-        
-        // Retry original request
-        originalRequest.headers.Authorization = `Bearer ${token}`;
-        return authAxios(originalRequest);
-      } catch (refreshError) {
-        // If refresh fails, logout
-        localStorage.removeItem('auth-token');
-        localStorage.removeItem('user');
-        window.location.href = '/login';
-        return Promise.reject(refreshError);
-      }
-    }
-    
-    return Promise.reject(error);
-  }
-);
+import supabase from './supabaseClient';
+import { AuthUser, LoginCredentials, RegisterData } from '@/types/auth';
 
 // For development/testing - generate mock user data
 const generateMockUser = (userData: Partial<AuthUser> & { password?: string }): AuthUser => {
@@ -81,44 +16,56 @@ const generateMockUser = (userData: Partial<AuthUser> & { password?: string }): 
   };
 };
 
-// Generate a mock token
-const generateMockToken = (user: AuthUser): string => {
-  return `mock-token-${user.id}-${Date.now()}`;
+// Map Supabase user data to our AuthUser type
+const mapSupabaseUser = (user: any, profile?: any): AuthUser => {
+  return {
+    id: user.id,
+    email: user.email || '',
+    name: profile?.name || user.user_metadata?.name || '',
+    role: profile?.role || user.user_metadata?.role || 'user',
+    avatar: profile?.avatar_url || user.user_metadata?.avatar_url || null,
+    height: profile?.height || user.user_metadata?.height || null,
+    weight: profile?.weight || user.user_metadata?.weight || null,
+    gender: profile?.gender || user.user_metadata?.gender || null,
+    age: profile?.age || user.user_metadata?.age || null
+  };
 };
 
 const authService = {
-  // Login user and store token
+  // Login user
   login: async (credentials: LoginCredentials): Promise<AuthUser> => {
     try {
-      const response = await authAxios.post('/auth/login', credentials);
-      const { token, user } = response.data;
-      
-      localStorage.setItem('auth-token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      
-      return user;
-    } catch (error: any) {
-      // If we get a 404, it means the route doesn't exist (API not set up yet)
-      if (error.response?.status === 404) {
-        console.warn('API route not found. Using mock data for development.');
-        
-        // Create mock user and token for development
+      // Check if Supabase is configured
+      if (!supabase || !supabase.auth) {
+        console.warn('Supabase not configured. Using mock data for development.');
         const mockUser = generateMockUser({ 
           email: credentials.email, 
           name: credentials.email.split('@')[0],
           role: credentials.email.includes('admin') ? 'admin' : 'user'
         });
-        const mockToken = generateMockToken(mockUser);
-        
-        localStorage.setItem('auth-token', mockToken);
         localStorage.setItem('user', JSON.stringify(mockUser));
-        
         return mockUser;
       }
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: credentials.email,
+        password: credentials.password
+      });
       
-      // Better error handling
-      const errorMsg = error.response?.data?.message || 'Login failed. Please check your credentials or network connection.';
-      console.error('Login error:', errorMsg, error);
+      if (error) throw error;
+      
+      // Fetch user profile from profiles table
+      const { data: profileData } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', data.user.id)
+        .single();
+      
+      const user = mapSupabaseUser(data.user, profileData);
+      localStorage.setItem('user', JSON.stringify(user));
+      return user;
+    } catch (error: any) {
+      console.error('Login error:', error.message);
       throw error;
     }
   },
@@ -126,35 +73,59 @@ const authService = {
   // Register new user
   register: async (data: RegisterData): Promise<AuthUser> => {
     try {
-      const response = await authAxios.post('/auth/register', data);
-      const { token, user } = response.data;
-      
-      localStorage.setItem('auth-token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      
-      return user;
-    } catch (error: any) {
-      // If we get a 404, it means the route doesn't exist (API not set up yet)
-      if (error.response?.status === 404) {
-        console.warn('API route not found. Using mock data for development.');
-        
-        // Create mock user and token for development
+      // Check if Supabase is configured
+      if (!supabase || !supabase.auth) {
+        console.warn('Supabase not configured. Using mock data for development.');
         const mockUser = generateMockUser({ 
           email: data.email, 
           name: data.name,
           role: data.role || 'user'
         });
-        const mockToken = generateMockToken(mockUser);
-        
-        localStorage.setItem('auth-token', mockToken);
         localStorage.setItem('user', JSON.stringify(mockUser));
-        
         return mockUser;
       }
+
+      // Register user with Supabase Auth
+      const { data: authData, error } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          data: {
+            name: data.name,
+            role: data.role || 'user'
+          }
+        }
+      });
       
-      // Better error handling
-      const errorMsg = error.response?.data?.message || 'Registration failed. Please try again later.';
-      console.error('Registration error:', errorMsg, error);
+      if (error) throw error;
+      
+      if (!authData.user) {
+        throw new Error('User registration failed');
+      }
+      
+      // Create profile record in profiles table
+      const { error: profileError } = await supabase
+        .from('users')
+        .insert({
+          id: authData.user.id,
+          name: data.name,
+          email: data.email,
+          role: data.role || 'user',
+        });
+      
+      if (profileError) {
+        console.error('Error creating user profile:', profileError);
+      }
+      
+      const user = mapSupabaseUser(authData.user, {
+        name: data.name,
+        role: data.role || 'user'
+      });
+      
+      localStorage.setItem('user', JSON.stringify(user));
+      return user;
+    } catch (error: any) {
+      console.error('Registration error:', error.message);
       throw error;
     }
   },
@@ -162,63 +133,157 @@ const authService = {
   // Logout user
   logout: async (): Promise<void> => {
     try {
-      await authAxios.post('/auth/logout');
+      if (supabase && supabase.auth) {
+        await supabase.auth.signOut();
+      }
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      localStorage.removeItem('auth-token');
       localStorage.removeItem('user');
     }
   },
   
-  // Get current user from token
-  getCurrentUser: (): AuthUser | null => {
-    const userJSON = localStorage.getItem('user');
-    if (!userJSON) return null;
-    
+  // Get current user from localStorage or Supabase session
+  getCurrentUser: async (): Promise<AuthUser | null> => {
     try {
-      return JSON.parse(userJSON);
-    } catch (e) {
-      console.error('Error parsing user from localStorage:', e);
+      // Check if Supabase is configured
+      if (!supabase || !supabase.auth) {
+        const userJSON = localStorage.getItem('user');
+        if (!userJSON) return null;
+        try {
+          return JSON.parse(userJSON);
+        } catch (e) {
+          console.error('Error parsing user from localStorage:', e);
+          return null;
+        }
+      }
+      
+      // Get session from Supabase
+      const { data } = await supabase.auth.getSession();
+      
+      if (!data.session || !data.session.user) {
+        return null;
+      }
+      
+      // Get user profile
+      const { data: profileData } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', data.session.user.id)
+        .single();
+      
+      const user = mapSupabaseUser(data.session.user, profileData);
+      localStorage.setItem('user', JSON.stringify(user));
+      return user;
+    } catch (error) {
+      console.error('Error getting current user:', error);
       return null;
     }
   },
   
   // Check if user is authenticated
-  isAuthenticated: (): boolean => {
-    return !!localStorage.getItem('auth-token');
+  isAuthenticated: async (): Promise<boolean> => {
+    if (!supabase || !supabase.auth) {
+      return !!localStorage.getItem('user');
+    }
+    
+    const { data } = await supabase.auth.getSession();
+    return !!data.session;
   },
   
   // Get auth token
-  getToken: (): string | null => {
-    return localStorage.getItem('auth-token');
+  getToken: async (): Promise<string | null> => {
+    if (!supabase || !supabase.auth) {
+      return null;
+    }
+    
+    const { data } = await supabase.auth.getSession();
+    return data.session?.access_token || null;
   },
   
-  // Refresh user data from server
+  // Refresh user data from Supabase
   refreshUserData: async (): Promise<AuthUser> => {
     try {
-      const response = await authAxios.get('/auth/user');
-      const user = response.data;
-      localStorage.setItem('user', JSON.stringify(user));
-      return user;
-    } catch (error: any) {
-      // If we get a 404, it means the route doesn't exist (API not set up yet)
-      if (error.response?.status === 404) {
-        console.warn('API route not found. Using stored user data.');
-        const storedUser = authService.getCurrentUser();
-        
+      if (!supabase || !supabase.auth) {
+        const storedUser = await authService.getCurrentUser();
         if (!storedUser) {
           throw new Error('No stored user data available');
         }
-        
         return storedUser;
       }
       
+      const { data, error } = await supabase.auth.getUser();
+      
+      if (error || !data.user) {
+        throw error || new Error('User not found');
+      }
+      
+      // Get user profile
+      const { data: profileData } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', data.user.id)
+        .single();
+      
+      const user = mapSupabaseUser(data.user, profileData);
+      localStorage.setItem('user', JSON.stringify(user));
+      return user;
+    } catch (error) {
       console.error('Error refreshing user data:', error);
       throw error;
     }
   },
+  
+  // Update user profile
+  updateUserProfile: async (userData: Partial<AuthUser>): Promise<AuthUser> => {
+    try {
+      if (!supabase || !supabase.auth) {
+        const currentUser = await authService.getCurrentUser();
+        if (!currentUser) {
+          throw new Error('No user data available');
+        }
+        
+        const updatedUser = { ...currentUser, ...userData };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        return updatedUser;
+      }
+      
+      const { data: sessionData } = await supabase.auth.getSession();
+      
+      if (!sessionData.session || !sessionData.session.user) {
+        throw new Error('No authenticated user');
+      }
+      
+      const userId = sessionData.session.user.id;
+      
+      // Update auth metadata if name is changing
+      if (userData.name) {
+        await supabase.auth.updateUser({
+          data: { name: userData.name }
+        });
+      }
+      
+      // Update profile in profiles table
+      const { error } = await supabase
+        .from('users')
+        .update({
+          name: userData.name,
+          height: userData.height,
+          weight: userData.weight,
+          gender: userData.gender,
+          age: userData.age,
+        })
+        .eq('id', userId);
+      
+      if (error) throw error;
+      
+      // Get updated user data
+      return authService.refreshUserData();
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      throw error;
+    }
+  }
 };
 
 export default authService;
-export { authAxios };

@@ -1,5 +1,5 @@
 
-import { API_URL, SANCTUM_COOKIE_ENDPOINT, ENDPOINTS } from "@/config/api";
+import supabase from './supabaseClient';
 
 /**
  * Response interface for API calls
@@ -12,47 +12,19 @@ interface ApiResponse<T> {
 }
 
 /**
- * API service for Laravel 11 backend
+ * API service using Supabase
  */
 export const api = {
-  // Endpoints reference for convenient access
-  endpoints: ENDPOINTS,
-  
-  // Fetch CSRF token from Laravel Sanctum
-  async getCsrfToken(): Promise<string | null> {
-    try {
-      const response = await fetch(`${API_URL}${SANCTUM_COOKIE_ENDPOINT}`, {
-        method: 'GET',
-        // Remove credentials: 'include' to fix CORS issues
-      });
-      
-      return response.ok ? 'Token fetched successfully' : null;
-    } catch (error) {
-      console.error('CSRF Token Error:', error);
-      return null;
-    }
-  },
-
   // Generic GET request
-  async get<T>(endpoint: string): Promise<ApiResponse<T>> {
+  async get<T>(path: string): Promise<ApiResponse<T>> {
     try {
-      const response = await fetch(`${API_URL}${endpoint}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-        },
-        // Remove credentials: 'include' to fix CORS issues
-      });
+      const { data, error } = await supabase.from(path).select('*');
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Network response was not ok');
+      if (error) {
+        throw new Error(error.message || 'Network response was not ok');
       }
       
-      const data = await response.json();
-      return { data, status: response.status };
+      return { data, status: 200 };
     } catch (error) {
       console.error('API Error:', error);
       return { 
@@ -63,29 +35,19 @@ export const api = {
   },
 
   // Generic POST request
-  async post<T>(endpoint: string, body: any): Promise<ApiResponse<T>> {
+  async post<T>(path: string, body: any): Promise<ApiResponse<T>> {
     try {
-      // Ensure CSRF token is fetched before making the request
-      await this.getCsrfToken();
-
-      const response = await fetch(`${API_URL}${endpoint}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest', // Important for Laravel
-        },
-        // Remove credentials: 'include' to fix CORS issues
-        body: JSON.stringify(body)
-      });
+      const { data, error } = await supabase
+        .from(path)
+        .insert(body)
+        .select()
+        .single();
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Network response was not ok');
+      if (error) {
+        throw new Error(error.message || 'Network response was not ok');
       }
       
-      const data = await response.json();
-      return { data, status: response.status };
+      return { data, status: 201 };
     } catch (error) {
       console.error('API Error:', error);
       return { 
@@ -96,28 +58,20 @@ export const api = {
   },
   
   // Generic PUT request
-  async put<T>(endpoint: string, body: any): Promise<ApiResponse<T>> {
+  async put<T>(path: string, id: string, body: any): Promise<ApiResponse<T>> {
     try {
-      await this.getCsrfToken();
-
-      const response = await fetch(`${API_URL}${endpoint}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-        },
-        // Remove credentials: 'include' to fix CORS issues
-        body: JSON.stringify(body)
-      });
+      const { data, error } = await supabase
+        .from(path)
+        .update(body)
+        .eq('id', id)
+        .select()
+        .single();
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Network response was not ok');
+      if (error) {
+        throw new Error(error.message || 'Network response was not ok');
       }
       
-      const data = await response.json();
-      return { data, status: response.status };
+      return { data, status: 200 };
     } catch (error) {
       console.error('API Error:', error);
       return { 
@@ -128,27 +82,20 @@ export const api = {
   },
   
   // Generic DELETE request
-  async delete<T>(endpoint: string): Promise<ApiResponse<T>> {
+  async delete<T>(path: string, id: string): Promise<ApiResponse<T>> {
     try {
-      await this.getCsrfToken();
-
-      const response = await fetch(`${API_URL}${endpoint}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-        },
-        // Remove credentials: 'include' to fix CORS issues
-      });
+      const { data, error } = await supabase
+        .from(path)
+        .delete()
+        .eq('id', id)
+        .select()
+        .single();
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Network response was not ok');
+      if (error) {
+        throw new Error(error.message || 'Network response was not ok');
       }
       
-      const data = await response.json();
-      return { data, status: response.status };
+      return { data, status: 200 };
     } catch (error) {
       console.error('API Error:', error);
       return { 
