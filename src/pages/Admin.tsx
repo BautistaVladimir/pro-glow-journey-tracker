@@ -1,10 +1,11 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
-import { Shield, Users, Activity, LineChart, Award, ChevronUp, ChevronDown, UserCog, Settings } from "lucide-react";
+import { Shield, Users, Activity, LineChart, Award, ChevronUp, ChevronDown, UserCog, Settings, KeyRound } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { UserManagement } from "@/components/admin/UserManagement";
 import { ReportsGeneration } from "@/components/admin/ReportsGeneration";
+import { AdminCodeManagement } from "@/components/admin/AdminCodeManagement";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Admin = () => {
@@ -92,6 +93,10 @@ const Admin = () => {
             <LineChart className="h-4 w-4 mr-2" />
             Reports
           </TabsTrigger>
+          <TabsTrigger value="admin-codes" className="flex items-center">
+            <KeyRound className="h-4 w-4 mr-2" />
+            Admin Codes
+          </TabsTrigger>
           <TabsTrigger value="admin-info" className="flex items-center">
             <Shield className="h-4 w-4 mr-2" />
             Admin Info
@@ -109,6 +114,10 @@ const Admin = () => {
         
         <TabsContent value="reports" className="space-y-4">
           <ReportsGeneration users={users} />
+        </TabsContent>
+        
+        <TabsContent value="admin-codes" className="space-y-4">
+          <AdminCodeManagement />
         </TabsContent>
         
         <TabsContent value="admin-info" className="space-y-4 grid md:grid-cols-2 gap-4">

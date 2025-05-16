@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '@/contexts/AuthContext';
 import { Shield, User, Mail, Lock, Key } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -18,26 +19,26 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { supabase } from '@/integrations/supabase/client';
 
 const adminRegisterSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters' }),
   email: z.string().email({ message: 'Please enter a valid email address' }),
   password: z.string().min(8, { message: 'Admin password must be at least 8 characters' }),
   confirmPassword: z.string(),
-  adminCode: z.string().min(6, { message: 'Admin code is required' }),
+  adminCode: z.string().min(5, { message: 'Admin code is required' }),
 }).refine(data => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
-}).refine(data => data.adminCode === "ADMIN123", {
-  message: "Invalid admin code",
-  path: ["adminCode"],
 });
 
 type AdminRegisterFormValues = z.infer<typeof adminRegisterSchema>;
 
 const AdminRegister = () => {
   const { register } = useAuth();
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [codeVerified, setCodeVerified] = useState<boolean | null>(null);
 
   const form = useForm<AdminRegisterFormValues>({
     resolver: zodResolver(adminRegisterSchema),
@@ -50,11 +51,68 @@ const AdminRegister = () => {
     },
   });
 
+  // Verify admin code without submitting the form
+  const verifyAdminCode = async (code: string) => {
+    if (code.length < 5) return;
+    
+    try {
+      const { data, error } = await supabase.rpc('verify_admin_code', { input_code: code });
+      
+      if (error) throw error;
+      
+      setCodeVerified(data);
+      
+      if (data) {
+        toast({
+          title: "Admin code verified",
+          description: "The admin code is valid. You can continue with registration.",
+        });
+      } else {
+        toast({
+          title: "Invalid admin code",
+          description: "The admin code is invalid or has already been used.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Error verifying admin code:', error);
+      setCodeVerified(false);
+    }
+  };
+
   const onSubmit = async (data: AdminRegisterFormValues) => {
     setIsLoading(true);
+    
     try {
+      // Verify the admin code again during submission
+      const { data: isValid, error: verifyError } = await supabase.rpc(
+        'verify_admin_code', 
+        { input_code: data.adminCode }
+      );
+      
+      if (verifyError) throw verifyError;
+      
+      if (!isValid) {
+        toast({
+          title: "Invalid admin code",
+          description: "The code is invalid or has already been used.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
       await register(data.name, data.email, data.password, 'admin');
-    } catch (error) {
+      
+      toast({
+        title: "Admin account created",
+        description: "Your administrator account has been created successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Registration failed",
+        description: error.message || "There was a problem creating your admin account.",
+        variant: "destructive"
+      });
       console.error('Admin registration error:', error);
     } finally {
       setIsLoading(false);
@@ -169,8 +227,18 @@ const AdminRegister = () => {
                       <Input 
                         type="text" 
                         placeholder="Enter admin code" 
-                        className="border-purple-100 focus:border-proglo-purple focus:ring-proglo-purple/20"
+                        className={`border-purple-100 focus:border-proglo-purple focus:ring-proglo-purple/20 
+                          ${codeVerified === true ? 'border-green-500' : 
+                          codeVerified === false ? 'border-red-500' : ''}`}
                         {...field} 
+                        onChange={(e) => {
+                          field.onChange(e);
+                          if (e.target.value.length >= 5) {
+                            verifyAdminCode(e.target.value);
+                          } else {
+                            setCodeVerified(null);
+                          }
+                        }}
                       />
                     </FormControl>
                     <FormMessage />

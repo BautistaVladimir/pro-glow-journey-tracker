@@ -64,7 +64,7 @@ const Dashboard = () => {
       {/* Weight Tracking and BMI */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 stagger-animate-2">
-          <WeightTracker data={weightData} isLoading={isLoading} />
+          <WeightTracker data={weightData} />
         </div>
         
         <div className="lg:col-span-1 stagger-animate-2" style={{ animationDelay: "0.2s" }}>
