@@ -1,44 +1,43 @@
 
-import supabase from './supabaseClient';
-import authService from './authService';
+import { supabase } from '@/integrations/supabase/client';
 import { AuthUser } from '@/types/auth';
 
-// Generic API service using Supabase
+// API service using Supabase
 const apiService = {
   // User profile
   getUserProfile: async () => {
     try {
-      const user = await authService.getCurrentUser();
-      if (!user) throw new Error('User not authenticated');
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session) throw new Error('User not authenticated');
       
       const { data, error } = await supabase
         .from('users')
         .select('*')
-        .eq('id', user.id)
+        .eq('id', session.session.user.id)
         .single();
       
       if (error) throw error;
-      return data;
+      return { users: [data] };
     } catch (error) {
       console.error('Error fetching user profile:', error);
       throw error;
     }
   },
   
-  updateUserProfile: async (data: any) => {
+  updateUserProfile: async (userData: Partial<AuthUser>) => {
     try {
-      const user = await authService.getCurrentUser();
-      if (!user) throw new Error('User not authenticated');
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session) throw new Error('User not authenticated');
       
-      const { data: updatedData, error } = await supabase
+      const { data, error } = await supabase
         .from('users')
-        .update(data)
-        .eq('id', user.id)
+        .update(userData)
+        .eq('id', session.session.user.id)
         .select()
         .single();
       
       if (error) throw error;
-      return updatedData;
+      return data;
     } catch (error) {
       console.error('Error updating user profile:', error);
       throw error;
@@ -76,15 +75,22 @@ const apiService = {
     }
   },
   
-  createUser: async (userData: any) => {
+  deleteUser: async (userId: string) => {
     try {
-      // In Supabase, we need to create both auth user and profile
-      // This would typically be handled by a serverless function
-      // For simplicity, we'll just return a demo response
-      console.warn('Creating users requires a serverless function in Supabase');
-      return { ...userData, id: 'demo-id' };
+      const { error } = await supabase
+        .from('users')
+        .delete()
+        .eq('id', userId);
+      
+      if (error) throw error;
+      
+      // Admin function to delete user from auth
+      const { error: authError } = await supabase.auth.admin.deleteUser(userId);
+      if (authError) throw authError;
+      
+      return { success: true };
     } catch (error) {
-      console.error('Error creating user:', error);
+      console.error('Error deleting user:', error);
       throw error;
     }
   },
@@ -106,27 +112,16 @@ const apiService = {
     }
   },
   
-  deleteUser: async (userId: string) => {
-    try {
-      // Deleting users requires admin privileges and serverless functions
-      console.warn('Deleting users requires a serverless function in Supabase');
-      return { success: true };
-    } catch (error) {
-      console.error('Error deleting user:', error);
-      throw error;
-    }
-  },
-  
   // BMI
   getBMIHistory: async () => {
     try {
-      const user = await authService.getCurrentUser();
-      if (!user) throw new Error('User not authenticated');
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session) throw new Error('User not authenticated');
       
       const { data, error } = await supabase
         .from('bmi')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', session.session.user.id)
         .order('date', { ascending: false });
       
       if (error) throw error;
@@ -139,14 +134,14 @@ const apiService = {
   
   saveBMI: async (bmiData: any) => {
     try {
-      const user = await authService.getCurrentUser();
-      if (!user) throw new Error('User not authenticated');
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session) throw new Error('User not authenticated');
       
       const { data, error } = await supabase
         .from('bmi')
         .insert({
           ...bmiData,
-          user_id: user.id,
+          user_id: session.session.user.id,
           created_at: new Date().toISOString()
         })
         .select()
@@ -163,13 +158,13 @@ const apiService = {
   // Activities
   getActivities: async () => {
     try {
-      const user = await authService.getCurrentUser();
-      if (!user) throw new Error('User not authenticated');
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session) throw new Error('User not authenticated');
       
       const { data, error } = await supabase
         .from('activities')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', session.session.user.id)
         .order('date', { ascending: false });
       
       if (error) throw error;
@@ -182,14 +177,14 @@ const apiService = {
   
   saveActivity: async (activityData: any) => {
     try {
-      const user = await authService.getCurrentUser();
-      if (!user) throw new Error('User not authenticated');
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session) throw new Error('User not authenticated');
       
       const { data, error } = await supabase
         .from('activities')
         .insert({
           ...activityData,
-          user_id: user.id,
+          user_id: session.session.user.id,
           created_at: new Date().toISOString()
         })
         .select()
@@ -206,13 +201,13 @@ const apiService = {
   // Nutrition
   getNutrition: async () => {
     try {
-      const user = await authService.getCurrentUser();
-      if (!user) throw new Error('User not authenticated');
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session) throw new Error('User not authenticated');
       
       const { data, error } = await supabase
         .from('nutrition')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', session.session.user.id)
         .order('date', { ascending: false });
       
       if (error) throw error;
@@ -225,14 +220,14 @@ const apiService = {
   
   saveNutrition: async (nutritionData: any) => {
     try {
-      const user = await authService.getCurrentUser();
-      if (!user) throw new Error('User not authenticated');
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session) throw new Error('User not authenticated');
       
       const { data, error } = await supabase
         .from('nutrition')
         .insert({
           ...nutritionData,
-          user_id: user.id,
+          user_id: session.session.user.id,
           created_at: new Date().toISOString()
         })
         .select()
@@ -249,13 +244,13 @@ const apiService = {
   // Sleep
   getSleep: async () => {
     try {
-      const user = await authService.getCurrentUser();
-      if (!user) throw new Error('User not authenticated');
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session) throw new Error('User not authenticated');
       
       const { data, error } = await supabase
         .from('sleep')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', session.session.user.id)
         .order('date', { ascending: false });
       
       if (error) throw error;
@@ -268,14 +263,14 @@ const apiService = {
   
   saveSleep: async (sleepData: any) => {
     try {
-      const user = await authService.getCurrentUser();
-      if (!user) throw new Error('User not authenticated');
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session) throw new Error('User not authenticated');
       
       const { data, error } = await supabase
         .from('sleep')
         .insert({
           ...sleepData,
-          user_id: user.id,
+          user_id: session.session.user.id,
           created_at: new Date().toISOString()
         })
         .select()
@@ -292,13 +287,13 @@ const apiService = {
   // Goals
   getGoals: async () => {
     try {
-      const user = await authService.getCurrentUser();
-      if (!user) throw new Error('User not authenticated');
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session) throw new Error('User not authenticated');
       
       const { data, error } = await supabase
         .from('goals')
         .select('*')
-        .eq('user_id', user.id);
+        .eq('user_id', session.session.user.id);
       
       if (error) throw error;
       return data;
@@ -310,14 +305,14 @@ const apiService = {
   
   saveGoal: async (goalData: any) => {
     try {
-      const user = await authService.getCurrentUser();
-      if (!user) throw new Error('User not authenticated');
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session) throw new Error('User not authenticated');
       
       const { data, error } = await supabase
         .from('goals')
         .insert({
           ...goalData,
-          user_id: user.id,
+          user_id: session.session.user.id,
           created_at: new Date().toISOString()
         })
         .select()

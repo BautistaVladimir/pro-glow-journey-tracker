@@ -1,10 +1,9 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { AuthUser, UserRole, AuthContextType } from '@/types/auth';
 import authService from '@/services/authService';
-import apiService from '@/services/apiService';
+import { supabase } from '@/integrations/supabase/client';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -15,48 +14,62 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  // Check for stored auth on mount
+  // Check for stored auth on mount and set up auth state listener
   useEffect(() => {
+    // Set up auth state listener to keep the user state updated
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth state changed:', event);
+        setLoading(true);
+        
+        if (session?.user) {
+          try {
+            // Use setTimeout to prevent Supabase auth callback deadlocks
+            setTimeout(async () => {
+              const userData = await authService.getCurrentUser();
+              setUser(userData);
+              setLoading(false);
+            }, 0);
+          } catch (error) {
+            console.error('Error getting user data:', error);
+            setUser(null);
+            setLoading(false);
+          }
+        } else {
+          setUser(null);
+          setLoading(false);
+        }
+      }
+    );
+    
+    // Get initial session
     const initAuth = async () => {
       setLoading(true);
       try {
-        // Check if user is logged in
-        if (await authService.isAuthenticated()) {
-          // Get user data from localStorage first for quick UI update
-          const storedUser = await authService.getCurrentUser();
-          if (storedUser) {
-            setUser(storedUser);
-          }
-          
-          // Then refresh from server
-          try {
-            const freshUserData = await authService.refreshUserData();
-            setUser(freshUserData);
-          } catch (error) {
-            // If refresh fails, logout
-            await logout();
-          }
-          
-          // For admin users, fetch all users
-          if (storedUser && storedUser.role === 'admin') {
-            try {
-              const response = await apiService.getUserProfile();
-              if (response.users) {
-                setUsers(response.users);
-              }
-            } catch (error) {
-              console.error('Failed to fetch users list:', error);
-            }
+        const userData = await authService.getCurrentUser();
+        setUser(userData);
+        
+        // For admin users, fetch user list
+        if (userData?.role === 'admin') {
+          const { data } = await supabase.from('users').select('*');
+          if (data) {
+            setUsers(data as AuthUser[]);
           }
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
+        setUser(null);
       } finally {
         setLoading(false);
       }
     };
     
     initAuth();
+    
+    // Cleanup subscription on unmount
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
   
   // Login function
@@ -73,11 +86,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       navigate('/');
       return loggedInUser;
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Invalid email or password';
-      
       toast({
         title: "Login Failed",
-        description: errorMessage,
+        description: error.message || 'Invalid email or password',
         variant: "destructive",
       });
       
@@ -99,11 +110,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       navigate('/');
       return newUser;
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Registration failed';
-      
       toast({
         title: "Registration Failed",
-        description: errorMessage,
+        description: error.message || 'Registration failed',
         variant: "destructive",
       });
       
@@ -125,8 +134,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       navigate('/login');
     } catch (error) {
       console.error('Logout error:', error);
-      // Even if the server request fails, clear local storage
-      authService.logout();
       setUser(null);
       navigate('/login');
     }
@@ -137,14 +144,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!user) return;
     
     try {
-      const updatedUser = await apiService.updateUserProfile({ ...userData, id: user.id });
+      const updatedUser = await authService.updateUserProfile(userData);
       
-      setUser({ ...user, ...updatedUser });
-      
-      // Update users array if this user exists there
-      if (users.some(u => u.id === user.id)) {
-        setUsers(users.map(u => u.id === user.id ? { ...u, ...updatedUser } : u));
-      }
+      setUser(updatedUser);
       
       toast({
         title: "Profile Updated",
@@ -153,11 +155,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       return updatedUser;
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Failed to update profile';
-      
       toast({
         title: "Update Failed",
-        description: errorMessage,
+        description: error.message || 'Failed to update profile',
         variant: "destructive",
       });
       
@@ -165,12 +165,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
   
-  // Admin functions for user management - these would connect to your Laravel API endpoints
+  // Admin functions for user management
   const addUser = async (name: string, email: string, password: string, role: UserRole = 'user') => {
-    // This would be implemented to call your admin API endpoint
-    // For now we'll just use the register function but in reality would be a separate endpoint
     try {
-      const newUser = await authService.register({ name, email, password, role });
+      const { data, error } = await supabase.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: { name, role }
+      });
+      
+      if (error) throw error;
+      
+      const newUser = {
+        id: data.user.id,
+        name,
+        email,
+        role,
+        avatar: null
+      } as AuthUser;
+      
       setUsers([...users, newUser]);
       
       toast({
@@ -180,11 +194,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       return newUser;
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Failed to create user';
-      
       toast({
         title: "User Creation Failed",
-        description: errorMessage,
+        description: error.message || 'Failed to create user',
         variant: "destructive",
       });
       
@@ -203,8 +215,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     
     try {
-      // This would call your delete user API endpoint
-      await apiService.deleteUser(userId);
+      const { error } = await supabase
+        .from('users')
+        .delete()
+        .eq('id', userId);
+      
+      if (error) throw error;
+      
+      // Also delete from auth (requires admin privileges)
+      const { error: authError } = await supabase.auth.admin.deleteUser(userId);
+      
+      if (authError) throw authError;
+      
       const updatedUsers = users.filter(u => u.id !== userId);
       setUsers(updatedUsers);
       
@@ -213,11 +235,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: "User has been deleted successfully",
       });
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Failed to delete user';
-      
       toast({
         title: "Deletion Failed",
-        description: errorMessage,
+        description: error.message || 'Failed to delete user',
         variant: "destructive",
       });
     }
@@ -225,14 +245,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   const updateUser = async (userId: string, userData: Partial<AuthUser>) => {
     try {
-      // This would call your update user API endpoint
-      const updatedUser = await apiService.updateUser(userId, userData);
-      const updatedUsers = users.map(u => u.id === userId ? { ...u, ...updatedUser } : u);
+      const { error } = await supabase
+        .from('users')
+        .update(userData)
+        .eq('id', userId);
+      
+      if (error) throw error;
+      
+      // Update auth user metadata if name or role changed
+      if (userData.name || userData.role) {
+        const { error: authError } = await supabase.auth.admin.updateUserById(
+          userId,
+          { user_metadata: { name: userData.name, role: userData.role } }
+        );
+        
+        if (authError) throw authError;
+      }
+      
+      // Get updated user data
+      const { data: updatedUser } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single();
+      
+      // Update users list
+      const updatedUsers = users.map(u => (
+        u.id === userId ? { ...u, ...updatedUser } as AuthUser : u
+      ));
       setUsers(updatedUsers);
       
       // If this is the current user, update that too
       if (user && userId === user.id) {
-        setUser({ ...user, ...updatedUser });
+        setUser({ ...user, ...updatedUser } as AuthUser);
       }
       
       toast({
@@ -240,13 +285,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: "User has been updated successfully",
       });
       
-      return updatedUser;
+      return updatedUser as AuthUser;
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Failed to update user';
-      
       toast({
         title: "Update Failed",
-        description: errorMessage,
+        description: error.message || 'Failed to update user',
         variant: "destructive",
       });
       

@@ -1,20 +1,6 @@
 
-import supabase from './supabaseClient';
+import { supabase } from '@/integrations/supabase/client';
 import { AuthUser, LoginCredentials, RegisterData } from '@/types/auth';
-
-// For development/testing - generate mock user data
-const generateMockUser = (userData: Partial<AuthUser> & { password?: string }): AuthUser => {
-  const { password, ...userWithoutPassword } = userData;
-  
-  return {
-    id: Math.random().toString(36).substring(2, 15),
-    email: userData.email || 'user@example.com',
-    name: userData.name || 'Test User',
-    role: userData.role || 'user',
-    avatar: null,
-    ...userWithoutPassword
-  };
-};
 
 // Map Supabase user data to our AuthUser type
 const mapSupabaseUser = (user: any, profile?: any): AuthUser => {
@@ -23,7 +9,7 @@ const mapSupabaseUser = (user: any, profile?: any): AuthUser => {
     email: user.email || '',
     name: profile?.name || user.user_metadata?.name || '',
     role: profile?.role || user.user_metadata?.role || 'user',
-    avatar: profile?.avatar_url || user.user_metadata?.avatar_url || null,
+    avatar: profile?.avatar || user.user_metadata?.avatar_url || null,
     height: profile?.height || user.user_metadata?.height || null,
     weight: profile?.weight || user.user_metadata?.weight || null,
     gender: profile?.gender || user.user_metadata?.gender || null,
@@ -35,18 +21,6 @@ const authService = {
   // Login user
   login: async (credentials: LoginCredentials): Promise<AuthUser> => {
     try {
-      // Check if Supabase is configured
-      if (!supabase || !supabase.auth) {
-        console.warn('Supabase not configured. Using mock data for development.');
-        const mockUser = generateMockUser({ 
-          email: credentials.email, 
-          name: credentials.email.split('@')[0],
-          role: credentials.email.includes('admin') ? 'admin' : 'user'
-        });
-        localStorage.setItem('user', JSON.stringify(mockUser));
-        return mockUser;
-      }
-
       const { data, error } = await supabase.auth.signInWithPassword({
         email: credentials.email,
         password: credentials.password
@@ -54,7 +28,7 @@ const authService = {
       
       if (error) throw error;
       
-      // Fetch user profile from profiles table
+      // Fetch user profile from users table
       const { data: profileData } = await supabase
         .from('users')
         .select('*')
@@ -62,7 +36,6 @@ const authService = {
         .single();
       
       const user = mapSupabaseUser(data.user, profileData);
-      localStorage.setItem('user', JSON.stringify(user));
       return user;
     } catch (error: any) {
       console.error('Login error:', error.message);
@@ -73,18 +46,6 @@ const authService = {
   // Register new user
   register: async (data: RegisterData): Promise<AuthUser> => {
     try {
-      // Check if Supabase is configured
-      if (!supabase || !supabase.auth) {
-        console.warn('Supabase not configured. Using mock data for development.');
-        const mockUser = generateMockUser({ 
-          email: data.email, 
-          name: data.name,
-          role: data.role || 'user'
-        });
-        localStorage.setItem('user', JSON.stringify(mockUser));
-        return mockUser;
-      }
-
       // Register user with Supabase Auth
       const { data: authData, error } = await supabase.auth.signUp({
         email: data.email,
@@ -103,26 +64,19 @@ const authService = {
         throw new Error('User registration failed');
       }
       
-      // Create profile record in profiles table
-      const { error: profileError } = await supabase
+      // The user profile will be created by the database trigger we set up
+      
+      // Wait a moment for the trigger to complete
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Get the profile that was created by the trigger
+      const { data: profileData } = await supabase
         .from('users')
-        .insert({
-          id: authData.user.id,
-          name: data.name,
-          email: data.email,
-          role: data.role || 'user',
-        });
+        .select('*')
+        .eq('id', authData.user.id)
+        .single();
       
-      if (profileError) {
-        console.error('Error creating user profile:', profileError);
-      }
-      
-      const user = mapSupabaseUser(authData.user, {
-        name: data.name,
-        role: data.role || 'user'
-      });
-      
-      localStorage.setItem('user', JSON.stringify(user));
+      const user = mapSupabaseUser(authData.user, profileData);
       return user;
     } catch (error: any) {
       console.error('Registration error:', error.message);
@@ -133,31 +87,16 @@ const authService = {
   // Logout user
   logout: async (): Promise<void> => {
     try {
-      if (supabase && supabase.auth) {
-        await supabase.auth.signOut();
-      }
+      await supabase.auth.signOut();
     } catch (error) {
       console.error('Logout error:', error);
-    } finally {
-      localStorage.removeItem('user');
+      throw error;
     }
   },
   
-  // Get current user from localStorage or Supabase session
+  // Get current user from Supabase session
   getCurrentUser: async (): Promise<AuthUser | null> => {
     try {
-      // Check if Supabase is configured
-      if (!supabase || !supabase.auth) {
-        const userJSON = localStorage.getItem('user');
-        if (!userJSON) return null;
-        try {
-          return JSON.parse(userJSON);
-        } catch (e) {
-          console.error('Error parsing user from localStorage:', e);
-          return null;
-        }
-      }
-      
       // Get session from Supabase
       const { data } = await supabase.auth.getSession();
       
@@ -173,7 +112,6 @@ const authService = {
         .single();
       
       const user = mapSupabaseUser(data.session.user, profileData);
-      localStorage.setItem('user', JSON.stringify(user));
       return user;
     } catch (error) {
       console.error('Error getting current user:', error);
@@ -183,20 +121,12 @@ const authService = {
   
   // Check if user is authenticated
   isAuthenticated: async (): Promise<boolean> => {
-    if (!supabase || !supabase.auth) {
-      return !!localStorage.getItem('user');
-    }
-    
     const { data } = await supabase.auth.getSession();
     return !!data.session;
   },
   
   // Get auth token
   getToken: async (): Promise<string | null> => {
-    if (!supabase || !supabase.auth) {
-      return null;
-    }
-    
     const { data } = await supabase.auth.getSession();
     return data.session?.access_token || null;
   },
@@ -204,14 +134,6 @@ const authService = {
   // Refresh user data from Supabase
   refreshUserData: async (): Promise<AuthUser> => {
     try {
-      if (!supabase || !supabase.auth) {
-        const storedUser = await authService.getCurrentUser();
-        if (!storedUser) {
-          throw new Error('No stored user data available');
-        }
-        return storedUser;
-      }
-      
       const { data, error } = await supabase.auth.getUser();
       
       if (error || !data.user) {
@@ -226,7 +148,6 @@ const authService = {
         .single();
       
       const user = mapSupabaseUser(data.user, profileData);
-      localStorage.setItem('user', JSON.stringify(user));
       return user;
     } catch (error) {
       console.error('Error refreshing user data:', error);
@@ -237,17 +158,6 @@ const authService = {
   // Update user profile
   updateUserProfile: async (userData: Partial<AuthUser>): Promise<AuthUser> => {
     try {
-      if (!supabase || !supabase.auth) {
-        const currentUser = await authService.getCurrentUser();
-        if (!currentUser) {
-          throw new Error('No user data available');
-        }
-        
-        const updatedUser = { ...currentUser, ...userData };
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-        return updatedUser;
-      }
-      
       const { data: sessionData } = await supabase.auth.getSession();
       
       if (!sessionData.session || !sessionData.session.user) {
@@ -263,7 +173,7 @@ const authService = {
         });
       }
       
-      // Update profile in profiles table
+      // Update profile in users table
       const { error } = await supabase
         .from('users')
         .update({
