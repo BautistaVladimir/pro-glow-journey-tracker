@@ -141,8 +141,7 @@ const apiService = {
         .from('bmi')
         .insert({
           ...bmiData,
-          user_id: session.session.user.id,
-          created_at: new Date().toISOString()
+          user_id: session.session.user.id
         })
         .select()
         .single();
@@ -184,8 +183,7 @@ const apiService = {
         .from('activities')
         .insert({
           ...activityData,
-          user_id: session.session.user.id,
-          created_at: new Date().toISOString()
+          user_id: session.session.user.id
         })
         .select()
         .single();
@@ -227,8 +225,7 @@ const apiService = {
         .from('nutrition')
         .insert({
           ...nutritionData,
-          user_id: session.session.user.id,
-          created_at: new Date().toISOString()
+          user_id: session.session.user.id
         })
         .select()
         .single();
@@ -270,8 +267,7 @@ const apiService = {
         .from('sleep')
         .insert({
           ...sleepData,
-          user_id: session.session.user.id,
-          created_at: new Date().toISOString()
+          user_id: session.session.user.id
         })
         .select()
         .single();
@@ -312,8 +308,7 @@ const apiService = {
         .from('goals')
         .insert({
           ...goalData,
-          user_id: session.session.user.id,
-          created_at: new Date().toISOString()
+          user_id: session.session.user.id
         })
         .select()
         .single();
@@ -322,6 +317,48 @@ const apiService = {
       return data;
     } catch (error) {
       console.error('Error saving goal:', error);
+      throw error;
+    }
+  },
+  
+  // Hydration
+  getHydration: async () => {
+    try {
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session) throw new Error('User not authenticated');
+      
+      const { data, error } = await supabase
+        .from('hydration')
+        .select('*')
+        .eq('user_id', session.session.user.id)
+        .order('date', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error fetching hydration data:', error);
+      throw error;
+    }
+  },
+  
+  saveHydration: async (hydrationData: any) => {
+    try {
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session) throw new Error('User not authenticated');
+      
+      const { data, error } = await supabase
+        .from('hydration')
+        .insert({
+          ...hydrationData,
+          user_id: session.session.user.id
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error saving hydration data:', error);
       throw error;
     }
   },

@@ -9,6 +9,213 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      activities: {
+        Row: {
+          calories_burned: number | null
+          created_at: string
+          date: string
+          duration: number
+          id: string
+          intensity: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          calories_burned?: number | null
+          created_at?: string
+          date?: string
+          duration: number
+          id?: string
+          intensity: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          calories_burned?: number | null
+          created_at?: string
+          date?: string
+          duration?: number
+          id?: string
+          intensity?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      bmi: {
+        Row: {
+          bmi_value: number
+          category: string
+          created_at: string
+          date: string
+          height: number
+          id: string
+          user_id: string
+          weight: number
+        }
+        Insert: {
+          bmi_value: number
+          category: string
+          created_at?: string
+          date?: string
+          height: number
+          id?: string
+          user_id: string
+          weight: number
+        }
+        Update: {
+          bmi_value?: number
+          category?: string
+          created_at?: string
+          date?: string
+          height?: number
+          id?: string
+          user_id?: string
+          weight?: number
+        }
+        Relationships: []
+      }
+      goals: {
+        Row: {
+          category: string
+          completed: boolean | null
+          created_at: string
+          currentvalue: number
+          deadline: string | null
+          description: string | null
+          id: string
+          startvalue: number
+          targetvalue: number
+          title: string
+          unit: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          completed?: boolean | null
+          created_at?: string
+          currentvalue: number
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          startvalue: number
+          targetvalue: number
+          title: string
+          unit: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          completed?: boolean | null
+          created_at?: string
+          currentvalue?: number
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          startvalue?: number
+          targetvalue?: number
+          title?: string
+          unit?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      hydration: {
+        Row: {
+          amount: number
+          created_at: string
+          date: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          date?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          date?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      nutrition: {
+        Row: {
+          calories: number | null
+          carbs: number | null
+          category: string
+          created_at: string
+          date: string
+          fats: number | null
+          food: string
+          id: string
+          mealtime: string
+          portion: string
+          proteins: number | null
+          user_id: string
+        }
+        Insert: {
+          calories?: number | null
+          carbs?: number | null
+          category: string
+          created_at?: string
+          date?: string
+          fats?: number | null
+          food: string
+          id?: string
+          mealtime: string
+          portion: string
+          proteins?: number | null
+          user_id: string
+        }
+        Update: {
+          calories?: number | null
+          carbs?: number | null
+          category?: string
+          created_at?: string
+          date?: string
+          fats?: number | null
+          food?: string
+          id?: string
+          mealtime?: string
+          portion?: string
+          proteins?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      sleep: {
+        Row: {
+          created_at: string
+          date: string
+          hoursslept: number
+          id: string
+          quality: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date?: string
+          hoursslept: number
+          id?: string
+          quality?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          hoursslept?: number
+          id?: string
+          quality?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       users: {
         Row: {
           age: number | null
@@ -53,10 +260,86 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      bmi_history: {
+        Row: {
+          bmi_value: number | null
+          category: string | null
+          created_at: string | null
+          date: string | null
+          height: number | null
+          user_id: string | null
+          weight: number | null
+        }
+        Insert: {
+          bmi_value?: number | null
+          category?: string | null
+          created_at?: string | null
+          date?: string | null
+          height?: number | null
+          user_id?: string | null
+          weight?: number | null
+        }
+        Update: {
+          bmi_value?: number | null
+          category?: string | null
+          created_at?: string | null
+          date?: string | null
+          height?: number | null
+          user_id?: string | null
+          weight?: number | null
+        }
+        Relationships: []
+      }
+      daily_hydration_summary: {
+        Row: {
+          date: string | null
+          entries: number | null
+          total_intake: number | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
+      nutrition_breakdown: {
+        Row: {
+          date: string | null
+          meal_count: number | null
+          total_calories: number | null
+          total_carbs: number | null
+          total_fats: number | null
+          total_proteins: number | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
+      sleep_quality_trend: {
+        Row: {
+          avg_sleep_hours: number | null
+          records_count: number | null
+          user_id: string | null
+          week_start: string | null
+        }
+        Relationships: []
+      }
+      weekly_activity_summary: {
+        Row: {
+          total_activities: number | null
+          total_calories: number | null
+          total_minutes: number | null
+          user_id: string | null
+          week_start: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      calculate_bmi: {
+        Args: { height_cm: number; weight_kg: number }
+        Returns: number
+      }
+      get_bmi_category: {
+        Args: { bmi_value: number }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
