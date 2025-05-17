@@ -267,6 +267,7 @@ export type Database = {
           created_at: string | null
           date: string | null
           height: number | null
+          id: string | null
           user_id: string | null
           weight: number | null
         }
@@ -276,6 +277,7 @@ export type Database = {
           created_at?: string | null
           date?: string | null
           height?: number | null
+          id?: string | null
           user_id?: string | null
           weight?: number | null
         }
@@ -285,6 +287,7 @@ export type Database = {
           created_at?: string | null
           date?: string | null
           height?: number | null
+          id?: string | null
           user_id?: string | null
           weight?: number | null
         }
@@ -292,52 +295,134 @@ export type Database = {
       }
       daily_hydration_summary: {
         Row: {
+          amount: number | null
           date: string | null
-          entries: number | null
-          total_intake: number | null
           user_id: string | null
+        }
+        Insert: {
+          amount?: number | null
+          date?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number | null
+          date?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
       nutrition_breakdown: {
         Row: {
+          calories: number | null
+          carbs: number | null
+          category: string | null
+          created_at: string | null
           date: string | null
-          meal_count: number | null
-          total_calories: number | null
-          total_carbs: number | null
-          total_fats: number | null
-          total_proteins: number | null
+          fats: number | null
+          food: string | null
+          id: string | null
+          mealtime: string | null
+          portion: string | null
+          proteins: number | null
           user_id: string | null
+        }
+        Insert: {
+          calories?: number | null
+          carbs?: number | null
+          category?: string | null
+          created_at?: string | null
+          date?: string | null
+          fats?: number | null
+          food?: string | null
+          id?: string | null
+          mealtime?: string | null
+          portion?: string | null
+          proteins?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          calories?: number | null
+          carbs?: number | null
+          category?: string | null
+          created_at?: string | null
+          date?: string | null
+          fats?: number | null
+          food?: string | null
+          id?: string | null
+          mealtime?: string | null
+          portion?: string | null
+          proteins?: number | null
+          user_id?: string | null
         }
         Relationships: []
       }
       sleep_quality_trend: {
         Row: {
-          avg_sleep_hours: number | null
-          records_count: number | null
+          created_at: string | null
+          date: string | null
+          hoursslept: number | null
+          id: string | null
+          quality: string | null
           user_id: string | null
-          week_start: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          date?: string | null
+          hoursslept?: number | null
+          id?: string | null
+          quality?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          date?: string | null
+          hoursslept?: number | null
+          id?: string | null
+          quality?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
       weekly_activity_summary: {
         Row: {
-          total_activities: number | null
-          total_calories: number | null
-          total_minutes: number | null
+          activity_id: string | null
+          calories_burned: number | null
+          date: string | null
+          duration: number | null
+          intensity: string | null
+          type: string | null
           user_id: string | null
-          week_start: string | null
+        }
+        Insert: {
+          activity_id?: string | null
+          calories_burned?: number | null
+          date?: string | null
+          duration?: number | null
+          intensity?: string | null
+          type?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          activity_id?: string | null
+          calories_burned?: number | null
+          date?: string | null
+          duration?: number | null
+          intensity?: string | null
+          type?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
     }
     Functions: {
       calculate_bmi: {
-        Args: { height_cm: number; weight_kg: number }
+        Args:
+          | { weight: number; height: number }
+          | { weight: number; height: number }
         Returns: number
       }
       get_bmi_category: {
-        Args: { bmi_value: number }
+        Args: { bmi_value: number } | { weight: number; height: number }
         Returns: string
       }
     }

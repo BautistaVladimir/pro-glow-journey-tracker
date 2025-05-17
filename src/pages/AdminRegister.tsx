@@ -56,11 +56,15 @@ const AdminRegister = () => {
     if (code.length < 5) return;
     
     try {
-      const { data, error } = await supabase.rpc('verify_admin_code', { input_code: code });
+      // Use type assertion for the RPC function call
+      const { data, error } = await supabase.rpc(
+        'verify_admin_code' as any, 
+        { input_code: code }
+      ) as { data: boolean; error: any };
       
       if (error) throw error;
       
-      setCodeVerified(data);
+      setCodeVerified(!!data);
       
       if (data) {
         toast({
@@ -84,11 +88,11 @@ const AdminRegister = () => {
     setIsLoading(true);
     
     try {
-      // Verify the admin code again during submission
+      // Verify the admin code again during submission using type assertion
       const { data: isValid, error: verifyError } = await supabase.rpc(
-        'verify_admin_code', 
+        'verify_admin_code' as any, 
         { input_code: data.adminCode }
-      );
+      ) as { data: boolean; error: any };
       
       if (verifyError) throw verifyError;
       

@@ -46,10 +46,14 @@ export const AdminCodeManagement = () => {
   const fetchAdminCodes = async () => {
     setIsLoading(true);
     try {
+      // Use the raw SQL query approach to avoid TypeScript errors
       const { data, error } = await supabase
         .from('admin_codes')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }) as { 
+          data: AdminCode[] | null; 
+          error: any;
+        };
       
       if (error) throw error;
       
@@ -72,19 +76,22 @@ export const AdminCodeManagement = () => {
   
   const generateNewCode = async () => {
     try {
+      // Use the custom RPC function with type assertion
       const { data, error } = await supabase.rpc(
-        'generate_admin_code',
+        'generate_admin_code' as any,
         { description: description || null }
-      );
+      ) as { data: string; error: any };
       
       if (error) throw error;
       
-      setNewCode(data);
-      toast({
-        title: "Success",
-        description: "New admin code generated",
-      });
-      fetchAdminCodes();
+      if (data) {
+        setNewCode(data);
+        toast({
+          title: "Success",
+          description: "New admin code generated",
+        });
+        fetchAdminCodes();
+      }
     } catch (error: any) {
       toast({
         title: "Error",
