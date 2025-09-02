@@ -17,8 +17,8 @@ import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import AdminLogin from "./pages/AdminLogin";
-import AdminRegister from "./pages/AdminRegister";
 import Admin from "./pages/Admin";
+import MobileDemo from "./pages/MobileDemo";
 
 // Layout components
 import Navbar from "./components/layout/Navbar";
@@ -51,7 +51,7 @@ const AppRoutes = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/admin-login" element={<AdminLogin />} />
-          <Route path="/admin-register" element={<AdminRegister />} />
+          <Route path="/demo" element={<MobileDemo />} />
           
           {/* Protected Routes (require login) */}
           <Route element={<ProtectedRoute />}>

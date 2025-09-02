@@ -2,8 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { AuthUser, UserRole, AuthContextType } from '@/types/auth';
-import authService from '@/services/authService';
-import { supabase } from '@/integrations/supabase/client';
+import localAuthService from '@/services/localAuthService';
+import { localDB } from '@/services/localDatabase';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -14,47 +14,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  // Check for stored auth on mount and set up auth state listener
+  // Check for stored auth on mount
   useEffect(() => {
-    // Set up auth state listener to keep the user state updated
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state changed:', event);
-        setLoading(true);
-        
-        if (session?.user) {
-          try {
-            // Use setTimeout to prevent Supabase auth callback deadlocks
-            setTimeout(async () => {
-              const userData = await authService.getCurrentUser();
-              setUser(userData);
-              setLoading(false);
-            }, 0);
-          } catch (error) {
-            console.error('Error getting user data:', error);
-            setUser(null);
-            setLoading(false);
-          }
-        } else {
-          setUser(null);
-          setLoading(false);
-        }
-      }
-    );
-    
-    // Get initial session
     const initAuth = async () => {
       setLoading(true);
       try {
-        const userData = await authService.getCurrentUser();
+        const userData = await localAuthService.getCurrentUser();
         setUser(userData);
         
         // For admin users, fetch user list
         if (userData?.role === 'admin') {
-          const { data } = await supabase.from('users').select('*');
-          if (data) {
-            setUsers(data as AuthUser[]);
-          }
+          const allUsers = await localDB.getUsers();
+          setUsers(allUsers);
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
@@ -65,17 +36,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
     
     initAuth();
-    
-    // Cleanup subscription on unmount
-    return () => {
-      subscription.unsubscribe();
-    };
   }, []);
   
   // Login function
   const login = async (email: string, password: string) => {
     try {
-      const loggedInUser = await authService.login({ email, password });
+      const loggedInUser = await localAuthService.login({ email, password });
       setUser(loggedInUser);
       
       toast({
@@ -99,7 +65,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Register function
   const register = async (name: string, email: string, password: string, role: UserRole = 'user') => {
     try {
-      const newUser = await authService.register({ name, email, password, role });
+      const newUser = await localAuthService.register({ name, email, password, role });
       setUser(newUser);
       
       toast({
@@ -123,7 +89,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Logout function
   const logout = async () => {
     try {
-      await authService.logout();
+      await localAuthService.logout();
       setUser(null);
       
       toast({
@@ -144,7 +110,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!user) return;
     
     try {
-      const updatedUser = await authService.updateUserProfile(userData);
+      const updatedUser = await localAuthService.updateUserProfile(userData);
       
       setUser(updatedUser);
       
@@ -168,31 +134,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Admin functions for user management
   const addUser = async (name: string, email: string, password: string, role: UserRole = 'user') => {
     try {
-      const { data, error } = await supabase.auth.admin.createUser({
-        email,
-        password,
-        email_confirm: true,
-        user_metadata: { name, role }
-      });
-      
-      if (error) throw error;
-      
-      const newUser = {
-        id: data.user.id,
+      const newUser = await localDB.addUser({
         name,
         email,
         role,
-        avatar: null
-      } as AuthUser;
+        passwordHash: btoa(password + 'proglo_salt'), // Simple hash for demo
+        avatar: null,
+        height: null,
+        weight: null,
+        gender: null,
+        age: null
+      });
       
-      setUsers([...users, newUser]);
+      const { passwordHash, ...userWithoutPassword } = newUser;
+      setUsers([...users, userWithoutPassword]);
       
       toast({
         title: "User Created",
         description: `${name} has been added successfully`,
       });
       
-      return newUser;
+      return userWithoutPassword;
     } catch (error: any) {
       toast({
         title: "User Creation Failed",
@@ -215,20 +177,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     
     try {
-      const { error } = await supabase
-        .from('users')
-        .delete()
-        .eq('id', userId);
-      
-      if (error) throw error;
-      
-      // Also delete from auth (requires admin privileges)
-      const { error: authError } = await supabase.auth.admin.deleteUser(userId);
-      
-      if (authError) throw authError;
-      
       const updatedUsers = users.filter(u => u.id !== userId);
       setUsers(updatedUsers);
+      
+      // Update local storage (remove user from all data)
+      const allUsers = await localDB.getUsers();
+      const filteredUsers = allUsers.filter(u => u.id !== userId);
+      await localDB['setData']('proglo_users', filteredUsers);
       
       toast({
         title: "User Deleted",
@@ -245,39 +200,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   const updateUser = async (userId: string, userData: Partial<AuthUser>) => {
     try {
-      const { error } = await supabase
-        .from('users')
-        .update(userData)
-        .eq('id', userId);
+      const updatedUser = await localDB.updateUser(userId, userData);
       
-      if (error) throw error;
-      
-      // Update auth user metadata if name or role changed
-      if (userData.name || userData.role) {
-        const { error: authError } = await supabase.auth.admin.updateUserById(
-          userId,
-          { user_metadata: { name: userData.name, role: userData.role } }
-        );
-        
-        if (authError) throw authError;
+      if (!updatedUser) {
+        throw new Error('User not found');
       }
-      
-      // Get updated user data
-      const { data: updatedUser } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', userId)
-        .single();
       
       // Update users list
       const updatedUsers = users.map(u => (
-        u.id === userId ? { ...u, ...updatedUser } as AuthUser : u
+        u.id === userId ? { ...u, ...updatedUser } : u
       ));
       setUsers(updatedUsers);
       
       // If this is the current user, update that too
       if (user && userId === user.id) {
-        setUser({ ...user, ...updatedUser } as AuthUser);
+        setUser({ ...user, ...updatedUser });
       }
       
       toast({
@@ -285,7 +222,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: "User has been updated successfully",
       });
       
-      return updatedUser as AuthUser;
+      return updatedUser;
     } catch (error: any) {
       toast({
         title: "Update Failed",

@@ -13,6 +13,7 @@ export interface AuthUser {
   weight?: number; // kg
   gender?: string;
   age?: number;
+  passwordHash?: string;
 }
 
 export interface LoginCredentials {

@@ -7,7 +7,7 @@ import WeightTracker from '@/components/dashboard/WeightTracker';
 import BMISummary from '@/components/dashboard/BMISummary';
 import RecentActivities from '@/components/dashboard/RecentActivities';
 import NutritionSummary from '@/components/dashboard/NutritionSummary';
-import apiService from '@/services/apiService';
+import { localDB } from '@/services/localDatabase';
 
 const Dashboard = () => {
   const { user } = useAuth();
