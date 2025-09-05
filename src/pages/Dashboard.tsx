@@ -20,7 +20,7 @@ const Dashboard = () => {
       if (user) {
         try {
           // Fetch BMI data
-          const bmiHistory = await apiService.getBMIHistory();
+          const bmiHistory = await localDB.getBMIRecords(user.id);
           setBmiData(bmiHistory);
           
           // Transform BMI data for weight tracking
